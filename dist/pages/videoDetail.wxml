@@ -1,0 +1,111 @@
+<view>
+  <navbar title="{{playVideoData.title}}" bgColor="#25335A" borderBottom="{{false}}" arrowColor="white" titleColor="white" _pid="{{_pid}}"></navbar>
+  <view style="height:211px;" class="ui-row">
+    <view class="ui-col" style="">
+      <view class="ui-col-content">
+        <txv-video wx:if="{{playVideoData.useTxVideo}}" height="100%" width="100%" poster="{{playVideoData.coverImg}}" vid="{{playVideoData.vid}}" playerid="txv1" controls="{{true}}" autoplay="{{autoplay}}" enablePlayGesture="{{true}}" _pid="{{_pid}}"></txv-video>
+        <video wx:else="" style="height:100%;width:100%;" id="myVideo" poster="{{playVideoData.coverImg}}" src="{{playVideoData.realSrc}}" controls="{{true}}" autoplay="{{autoplay}}" enable-play-gesture="{{true}}"></video>
+      </view>
+    </view>
+  </view>
+
+  <view style="height:{{contentHeight}};" class="ui-row">
+    <view class="ui-col" style="">
+      <view class="ui-col-content">
+        <scroll-view scroll-y style="height:100%;" scroll-into-view="{{toAnchor}}" scroll-with-animation enable-back-to-top>
+          <view class="ui-row" style="">
+            <view class="ui-col" style="padding-left: 15px; padding-right: 15px;">
+              <view class="ui-col-content">
+                <view class="ui-row" style="margin-top: 12px;">
+                  <view class="ui-col" style="">
+                    <view class="ui-col-content">
+                      <text class="titleText">{{playVideoData.title}}</text>
+                    </view>
+                  </view>
+                </view>
+
+                <!-- <ui-row space-top="20">
+                <ui-col vertical-align="middle" align="left">
+                  <text class="pit">本文素材来源于网络，若有侵犯请告知！</text>
+                </ui-col>
+              </ui-row> -->
+
+                <view id="cAnchor" class="ui-row" style="margin-top: 30px;">
+                  <view class="ui-col" style="">
+                    <view class="ui-col-content">
+                      <view class="ui-row" style="">
+                        <view class="ui-col" style="">
+                          <view class="ui-col-content">
+                            <text class="commentText">更多相关</text>
+                          </view>
+                        </view>
+                      </view>
+
+                      <view class="ui-row" style="margin-top: 20px;">
+                        <view class="ui-col" style="">
+                          <view class="ui-col-content">
+                            <view wx:key="id" wx:for="{{videoDataList}}" wx:for-item="videoData" wx:for-index="vIndex" bindtap="hintNetwork" data-videodata="{{videoData}}" data-index="{{vIndex}}" class="ui-row" style="margin-bottom: 8px;height:76px;">
+                              <view class="ui-col ui-col-4 ui-col-align-center align-center valign-middle" style="flex: 0 0 33.33333333333333%;">
+                                <view class="ui-col-content align-center valign-middle">
+                                  <image mode="aspectFill" lazy-load="{{true}}" class="moreVideoItemImg" src="{{videoData.coverImg}}" />
+                                  <text class="viewCountTip">{{videoData.duration}}</text>
+                                </view>
+                              </view>
+                              <view class="ui-col ui-col-8" style="flex: 0 0 66.66666666666666%;padding-left: 10px;">
+                                <view class="ui-col-content">
+                                  <view style="color:{{playVideoData.id==videoData.id?'#50B0D0;font-weight: 500;':'black;'}};" class="ui-row">
+                                    <view class="ui-col ui-col-align-left align-left valign-top" style="">
+                                      <view class="ui-col-content align-left valign-top">
+                                        <text class="text-content-breif">{{videoData.title}}</text>
+                                      </view>
+                                    </view>
+                                  </view>
+                                  <view class="ui-row" style="">
+                                    <view class="ui-col ui-col-align-right align-right valign-bottom" style="">
+                                      <view class="ui-col-content align-right valign-bottom">
+                                        <text class="listViewCount">{{videoData.viewCount}}播放</text>
+                                      </view>
+                                    </view>
+                                  </view>
+                                </view>
+                              </view>
+                            </view>
+                          </view>
+                        </view>
+                      </view>
+                      <view bindtap="loadMore" class="ui-row" style="margin-bottom: 10px;margin-top: 6px;height:25px;">
+                        <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+                          <view class="ui-col-content align-center valign-middle">
+                            <text style="color:#8b8b8b;">{{moreDataText}}</text>
+                          </view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+  <view style="height:46px;"></view>
+  <!-- 底部bar -->
+  <ui-fixed-view bottom="0" left="0" right="0" style="height:46px;" _pid="{{_pid}}">
+    <view style="height:46px;" class="bottomFixedView ui-row ui-row-border-top">
+      <view class="pit ui-col ui-col-10 ui-col-align-left align-left valign-middle" style="flex: 0 0 83.33333333333334%;padding-left: 20px;">
+        <view class="ui-col-content align-left valign-middle">
+          <text>{{playVideoData.viewCount}}播放</text>
+        </view>
+      </view>
+      <view class="ui-col ui-col-2 ui-col-align-center align-center valign-middle" style="flex: 0 0 16.666666666666664%;">
+        <view class="ui-col-content align-center valign-middle">
+          <button class="shareBut" open-type="share" data-publishRecordId="{{publishRecord.publishRecordId}}">
+            <image lazy-load="{{true}}" class="infoImg" src="../static/images/share1.png" />
+          </button>
+        </view>
+      </view>
+    </view>
+  </ui-fixed-view>
+</view>

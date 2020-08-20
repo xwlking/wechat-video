@@ -1,0 +1,428 @@
+<template>
+  <view>
+    <navbar title="{{playVideoData.title}}" bgColor="#25335A" borderBottom="{{false}}" arrowColor="white" titleColor="white"></navbar>
+    <ui-row style="height:211px;">
+      <ui-col>
+        <txv-video wx:if="{{playVideoData.useTxVideo}}" height="100%" width="100%" poster="{{playVideoData.coverImg}}" 
+        vid="{{playVideoData.vid}}" playerid="txv1" controls="{{true}}" autoplay="{{autoplay}}" enablePlayGesture="{{true}}"></txv-video>
+        <video wx:else style="height:100%;width:100%;" id="myVideo" poster="{{playVideoData.coverImg}}" 
+        src="{{playVideoData.realSrc}}" controls="{{true}}" autoplay="{{autoplay}}" enable-play-gesture="{{true}}"></video>
+      </ui-col>
+    </ui-row>
+
+    <ui-row style="height:{{contentHeight}};">
+      <ui-col>
+        <scroll-view scroll-y style="height:100%;" scroll-into-view="{{toAnchor}}" scroll-with-animation enable-back-to-top>
+          <ui-row>
+            <ui-col space="30">
+              <ui-row space-top="12">
+                <ui-col>
+                  <text class="titleText">{{playVideoData.title}}</text>
+                </ui-col>
+              </ui-row>
+
+              <!-- <ui-row space-top="20">
+                <ui-col vertical-align="middle" align="left">
+                  <text class="pit">本文素材来源于网络，若有侵犯请告知！</text>
+                </ui-col>
+              </ui-row> -->
+
+              <ui-row space-top="30" id="cAnchor">
+                <ui-col>
+                  <ui-row>
+                    <ui-col>
+                      <text class="commentText">更多相关</text>
+                    </ui-col>
+                  </ui-row>
+                  
+                  <ui-row space-top="20">
+                    <ui-col>
+                      <ui-row space-bottom="8" wx:key="id" wx:for="{{videoDataList}}" wx:for-item="videoData" wx:for-index="vIndex" height="76" bindtap="hintNetwork" data-videodata="{{videoData}}" data-index="{{vIndex}}">
+                        <ui-col span="4" vertical-align="middle" align="center">
+                          <image mode='aspectFill' lazy-load={{true}} class="moreVideoItemImg" src="{{videoData.coverImg}}"/>
+                          <text class="viewCountTip">{{videoData.duration}}</text>
+                        </ui-col>
+                        <ui-col span="8" space-left="10">
+                          <ui-row style="color:{{playVideoData.id==videoData.id?'#50B0D0;font-weight: 500;':'black;'}}">
+                            <ui-col vertical-align="top" align="left">
+                              <text class="text-content-breif">{{videoData.title}}</text>
+                            </ui-col>
+                          </ui-row>
+                          <ui-row>
+                            <ui-col vertical-align="bottom" align="right">
+                              <text class="listViewCount">{{videoData.viewCount}}播放</text>
+                            </ui-col>
+                          </ui-row>
+                        </ui-col>
+                      </ui-row>
+                    </ui-col>
+                  </ui-row>
+                  <ui-row height="25" space-top="6" space-bottom="10" bindtap="loadMore">
+                    <ui-col vertical-align="middle" align="center">
+                      <text style="color:#8b8b8b;">{{moreDataText}}</text>
+                    </ui-col>
+                  </ui-row>
+                </ui-col>
+              </ui-row>
+            </ui-col>
+          </ui-row>
+        </scroll-view>
+      </ui-col>
+    </ui-row>
+    <view style="height:46px;"></view>
+    <!-- 底部bar -->
+    <ui-fixed-view bottom="0" left="0" right="0" style="height:46px;">
+      <ui-row style="height:46px;" border-top class="bottomFixedView">
+        <ui-col span="10" space-left="20" class="pit" vertical-align="middle" align="left">
+          <text>{{playVideoData.viewCount}}播放</text>
+        </ui-col>
+        <ui-col span="2" vertical-align="middle" align="center">
+          <button class='shareBut' open-type='share' data-publishRecordId="{{publishRecord.publishRecordId}}">
+            <image lazy-load={{true}} class="infoImg" src="../static/images/share1.png"/>
+          </button>
+        </ui-col>
+      </ui-row>
+    </ui-fixed-view>
+  </view>
+</template>
+
+<script>
+import qqVideo from "../static/utils/qqVideo";
+var app = getApp();
+var thisPage = null;
+export default {
+  config: {
+    usingComponents: {
+      navbar: "../packages/navbar",
+      "txv-video": "plugin://tencentvideo/video"
+    }
+  },
+  data: {
+    contentHeight: wx.DEFAULT_CONTENT_HEIGHT - 211 - 46 + "px",
+    page: 1,
+    size: 10,
+    totalNum: 0,
+    videoDataList: [],
+    playVideoData: {}
+  },
+  onLoad(e) {
+    thisPage = this;
+    var playVideoData = thisPage.data.playVideoData;
+    playVideoData.id = e.id;
+    playVideoData.title = e.title;
+    playVideoData.coverImg = e.coverImg;
+    playVideoData.vid = e.vid;
+    playVideoData.videoCategoryId = e.videoCategoryId;
+    thisPage.bulidVideoSrc(playVideoData);
+
+    var page = parseInt(e.page);
+    var size = thisPage.data.size;
+    thisPage.setData({
+      page: page,
+      videoCategoryId: playVideoData.videoCategoryId,
+      playVideoData: playVideoData
+    });
+
+    if (getCurrentPages().length == 1) {
+      app.getCertificate().then(function() {
+        thisPage.videoViewStat(playVideoData.id);
+        thisPage.getVideoList(page, size);
+        thisPage.autoPlay();
+      });
+    } else {
+      thisPage.videoViewStat(playVideoData.id);
+      thisPage.getVideoList(page, size);
+      thisPage.autoPlay();
+    }
+  },
+  autoPlay() {
+    if (wx.getStorageSync("notWifiPlayVideo"))
+      return thisPage.setData({ autoplay: true });
+
+    wx.getNetworkType({
+      success: function(e) {
+        if (e.networkType != "wifi") {
+          wx.showModal({
+            title: "提示",
+            content: "当前非WIFI环境，是否继续播放？",
+            success: function(res) {
+              if (res.confirm) {
+                wx.setStorage({ key: "notWifiPlayVideo", data: true });
+                thisPage.setData({ autoplay: true });
+                let videoContext = wx.createVideoContext("myVideo", thisPage);
+                videoContext.play();
+              } else thisPage.setData({ autoplay: false });
+            }
+          });
+        } else thisPage.setData({ autoplay: true });
+      }
+    });
+  },
+  /**
+   *组装视频数据对象
+   */
+  bulidVideoSrc(playVideoData) {
+    qqVideo.getVideoes(playVideoData.vid).then(function(response) {
+      var src = response.src;
+      var useTxVideo = false;
+      if (src) {
+        playVideoData.realSrc = src;
+      } else {
+        //未获取到视频地址，使用腾讯视频控件播放
+        playVideoData.useTxVideo = true;
+      }
+      thisPage.setData({ playVideoData: playVideoData });
+    });
+  },
+  /**
+   * 查询视频列表
+   */
+  getVideoList(page, size) {
+    thisPage.setData({
+      forbidLoadFlag: true
+    });
+    var jwt = wx.getStorageSync("jwt");
+    wx.request({
+      url: app.server + "/miniapp/lg/video",
+      method: "GET",
+      header: {
+        Authorization: jwt
+      },
+      data: {
+        page: page,
+        size: size,
+        videoCategoryId: thisPage.data.videoCategoryId
+      },
+      success: function(res) {
+        var result = res.data;
+        if (result.status) {
+          var newDataList = res.data.resultObj.records;
+          var totalNum = res.data.resultObj.total;
+          // 计算总页数
+          var totalPage = parseInt(
+            (parseInt(totalNum) - 1) / parseInt(size) + 1
+          );
+          var videoDataList = thisPage.data.videoDataList;
+          for (let newData of newDataList) {
+            newData.videoCategoryId = thisPage.data.videoCategoryId;
+            videoDataList.push(newData); //底部累加
+          }
+          // console.log(videoDataList);
+          thisPage.setData({
+            videoDataList: videoDataList,
+            totalPage: totalPage,
+            totalNum: totalNum,
+            buttomTextFlag: page >= totalPage ? 2 : 1,
+            moreDataText:
+              page == totalPage ? "人家也是有底线的" : "点击加载更多"
+          });
+        } else {
+          var message = res.data.message;
+          wx.showToast({
+            title: message,
+            icon: "none"
+          });
+        }
+      },
+      fail: function(e) {
+        // app.requestSeverFailHint();
+      },
+      complete: function(e) {
+        thisPage.setData({
+          forbidLoadFlag: false
+        });
+      }
+    });
+  },
+  /**
+   * 加载更多相关视频
+   */
+  loadMore: function() {
+    var page = thisPage.data.page;
+    var size = thisPage.data.size;
+    var totalPage = thisPage.data.totalPage;
+
+    if (thisPage.data.forbidLoadFlag) return; //禁止查询标识
+    if (page >= totalPage) return;
+
+    thisPage.setData({ moreDataText: "加载中..." });
+
+    page += 1;
+    thisPage.getVideoList(page, size);
+
+    thisPage.setData({
+      page: page
+    });
+  },
+  /**
+   * 视频浏览统计
+   */
+  videoViewStat(videoId, index) {
+    wx.request({
+      header: {
+        Authorization: wx.getStorageSync("jwt")
+      },
+      method: "PUT",
+      url: app.server + "/miniapp/lg/video/count/" + videoId,
+      success: function(res) {
+        var status = res.data.status;
+        var message = res.data.message;
+        if (status) {
+          if (index >= 0) {
+            //+浏览数
+            var videoDataList = thisPage.data.videoDataList;
+            videoDataList[index].viewCount = res.data.resultObj;
+            thisPage.setData({
+              videoDataList: videoDataList
+            });
+          } else {
+            var playVideoData = thisPage.data.playVideoData;
+            playVideoData.viewCount = res.data.resultObj;
+            thisPage.setData({ playVideoData: playVideoData });
+          }
+        } else {
+          app.showToastNoneIcon(message);
+        }
+      },
+      fail: function(e) {
+        console.log(e);
+      },
+      complete: function() {}
+    });
+  },
+  hintNetwork(videoParam) {
+    if (wx.getStorageSync("notWifiPlayVideo"))
+      return thisPage.playVideo(videoParam);
+
+    wx.getNetworkType({
+      success: function(e) {
+        if (e.networkType != "wifi") {
+          wx.showModal({
+            title: "提示",
+            content: "当前非WIFI环境，是否继续播放？",
+            success: function(res) {
+              if (res.confirm) {
+                wx.setStorage({ key: "notWifiPlayVideo", data: true });
+                thisPage.playVideo(videoParam);
+              }
+            }
+          });
+        } else thisPage.playVideo(videoParam);
+      }
+    });
+  },
+  /**
+   *播放视频
+   */
+  playVideo(e) {
+    var playVideoData = e.currentTarget.dataset.videodata;
+    var index = e.currentTarget.dataset.index;
+    var vid = playVideoData.vid;
+
+    if (playVideoData.id == thisPage.data.playVideoData.id) return;
+
+    thisPage.videoViewStat(playVideoData.id, index);
+
+    qqVideo.getVideoes(vid).then(function(response) {
+      var src = response.src;
+      if (src) {
+        playVideoData.realSrc = src;
+      } else {
+        //未获取到视频地址，使用腾讯视频控件播放
+        playVideoData.useTxVideo = true;
+      }
+
+      playVideoData.viewCount = playVideoData.viewCount + 1;
+      thisPage.setData({
+        playVideoData: playVideoData,
+        autoplay: true
+      });
+    });
+  },
+  /**
+   * 分享信息
+   */
+  onShareAppMessage(e) {
+    var videodata = thisPage.data.playVideoData;
+    var page = thisPage.data.page;
+    var title = videodata.title;
+    var path =
+      "/pages/videoDetail?id=" +
+      videodata.id +
+      "&title=" +
+      videodata.title +
+      "&coverImg=" +
+      videodata.coverImg +
+      "&vid=" +
+      videodata.vid +
+      "&page=" +
+      page +
+      "&videoCategoryId=" +
+      videodata.videoCategoryId;
+
+    return {
+      title: title,
+      path: path,
+      imageUrl: videodata.coverImg
+    };
+  }
+};
+</script>
+
+<style lang="less">
+.infoImg {
+  width: 42rpx;
+  height: 42rpx;
+}
+.titleText {
+  font-size: 36rpx;
+  font-weight: 500;
+}
+.shareBut {
+  background-color: unset;
+}
+.shareBut::after {
+  border: 0;
+}
+.pit {
+  font-size: 25rpx;
+  color: #666666;
+}
+.bottomFixedView {
+  background-color: white;
+}
+.commentText {
+  color: #666666;
+  border-left: 5rpx solid #50b0d0;
+  padding-left: 2%;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+.moreVideoItemImg {
+  height: 100%;
+  width: 100%;
+  border-radius: 8%;
+}
+.viewCountTip {
+  position: absolute;
+  padding: 0 2%;
+  background-color: black;
+  opacity: 0.6;
+  border-radius: 8rpx;
+  color: white;
+  font-size: 20rpx;
+  bottom: 3%;
+  right: 2%;
+}
+.listViewCount {
+  font-size: 22rpx;
+  color: #666666;
+}
+.text-content-breif {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+</style>

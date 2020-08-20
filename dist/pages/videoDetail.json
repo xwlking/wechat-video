@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "ui-fixed-view": "../packages/touchui-wx-components/ui-fixed-view/dist/index",
+    "navbar": "../packages/navbar",
+    "txv-video": "plugin://tencentvideo/video"
+  }
+}

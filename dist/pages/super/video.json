@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "ui-divider": "../../packages/touchui-wx-components/ui-divider/dist/index",
+    "navbar": "../../packages/navbar",
+    "txv-video": "plugin://tencentvideo/video"
+  }
+}

@@ -1,0 +1,88 @@
+<template>
+  <view class="ui-segment">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+import WxHelper from '../../libs/WxHelper'
+import MultiHelper from '../../libs/MultiHelper'
+
+const ChildPath = '../../ui-segment-item/dist/index'
+
+export default {
+  relations: WxHelper.getChildRelation(ChildPath),
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { 
+    index: {
+      type: Number | String,
+      value: 0,
+      observer (index) {
+        this.handleIndexChange(index, true)
+      }
+    },
+    itemStyle: {
+      type: Object | String
+    },
+    activeItemStyle: {
+      type: Object | String
+    }
+  },
+  data: { 
+    selfIndex: 0,
+    children: []
+  },
+  ready () {
+    this._init()
+  },
+  methods: { 
+    _init () {
+      this._initChildren()
+      this._setItem()
+    },
+    _initChildren () {
+      let children = this.getRelationNodes(ChildPath)
+      this.setData({
+        children: children
+      })
+    },
+    _setItem () {
+      let { children, selfIndex, itemStyle, activeItemStyle } = this.data
+
+      let style = StyleHelper.getPlainStyle(itemStyle)
+      let activeStyle = StyleHelper.getMergedPlainStyles([itemStyle, activeItemStyle])
+
+      children.forEach((node, index) => {
+        node.setData({
+          selfStyle: index === selfIndex ? activeStyle : style,
+          active: index === selfIndex
+        })
+      })
+    },
+    handleIndexChange (index) {
+      this.setData({
+        selfIndex: index
+      })
+      this._setItem()
+      this.triggerEvent('change', { index: index })
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+ui-segment {
+  display: inline-block;
+  width: 100%;
+}
+.ui-segment {
+  display: flex;
+  justify-content: center;
+}
+</style>

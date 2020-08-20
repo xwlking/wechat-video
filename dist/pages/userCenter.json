@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "navbar": "../packages/navbar"
+  }
+}

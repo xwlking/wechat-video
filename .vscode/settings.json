@@ -1,0 +1,13 @@
+{
+    "touchuiwx.enable": true,
+    "vetur.extensions": [
+        ".wxa",
+        ".wx",
+        ".wxc"
+    ],
+    "files.associations": {
+        "*.wxa": "vue",
+        "*.wx": "vue",
+        "*.wxc": "vue"
+    }
+}

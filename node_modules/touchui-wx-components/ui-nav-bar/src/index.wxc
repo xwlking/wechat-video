@@ -1,0 +1,84 @@
+<template>
+  <view class="ui-nav-bar" style="{{ selfCustomStyle }}">
+    <view class="ui-nav-bar-content">
+      <slot></slot>
+    </view>
+  </view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { 
+    customStyle: {
+      type: Object | String
+    },
+    title: {
+      type: String
+    }
+  },
+  options: {
+    multipleSlots: true
+  },
+  // externalClasses: ['custom-nav-bar'],
+  ready () {
+    let height = wx.STATUS_BAR_HEIGHT + wx.DEFAULT_HEADER_HEIGHT
+    let style = this.data.customStyle || {}
+    style.height = height
+    style.paddingTop = wx.STATUS_BAR_HEIGHT
+    this.setData({
+      statusBarHeight: wx.STATUS_BAR_HEIGHT,
+      selfCustomStyle: StyleHelper.getPlainStyle(style)
+    })
+  }
+}
+</script>
+
+<style lang="less">
+
+.ui-nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  font-size: 14px;
+
+  z-index: 490;
+  user-select: none;
+  box-sizing: border-box;
+}
+.ui-nav-bar-content {
+  display: flex;
+
+  .nav-bar-left {
+    position: relative;
+    padding: 0 30px;
+  }
+
+  .nav-bar-center {
+    position: relative;
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
+  .nav-bar-right {
+    text-align: right;
+  }
+}
+
+
+
+.ui-nav-bar-more:after {
+  content: "\2022\0020\2022\0020\2022\0020";
+  font-size: 16px;
+}
+
+</style>

@@ -1,0 +1,56 @@
+<template>
+  <view class="ui-row-list {{ bordered ? 'ui-row-list-bordered' : '' }} {{ borderLeftIndent ? 'ui-row-list-border-left-indent' : '' }} {{ borderIndent ? 'ui-row-list-border-indent' : '' }}">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { 
+    bordered: Boolean,
+    borderLeftIndent: Boolean,
+    borderIndent: Boolean,
+    title: String
+  },
+  data: { },
+  methods: { }
+}
+
+
+</script>
+
+<style lang="less">
+@import '../../styles/mixins/util.less';
+
+.ui-row-list {
+  position: relative;
+
+  &.ui-row-list-bordered {
+    &:before {
+      .setTopLine();
+    }
+    &:after {
+      .setBottomLine();
+    }
+  }
+
+  > .ui-row:not(:last-child) {
+    &:after {
+      .setBottomLine();
+    }
+  }
+
+  &.ui-row-list-border-left-indent {
+    padding-left: 15px;
+  }
+
+  &.ui-row-list-border-indent {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+</style>

@@ -1,0 +1,16 @@
+{
+  "name": "ui-count-up",
+  "version": "1.0.0",
+  "description": "计数器 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-count-up"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

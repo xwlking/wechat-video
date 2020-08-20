@@ -1,0 +1,620 @@
+<!--components/slider/slider.wxml-->
+
+
+<template>
+  <view class="ui-slider"  style="position: relative;{{sliderStyle}}">
+    <!-- 值的列表  -->
+    <view 
+      wx:if="{{showValue}}"
+      style="{{valueStyle}}"
+      class="value">
+      {{unlimited ? value > max - step ? '不限' : value : value}}</view>
+    <view 
+      wx:if="{{showMaxValue}}" 
+      style="{{maxValueStyle}}"
+      class="value">
+      {{unlimited ? '不限' : max}}</view>
+      <!-- slider的外部 -->
+      
+    <view
+      class="slider-line-touch" 
+      bindtap="touchStartLineHandler"
+      style="{{sliderLineTouchStyle}}">
+      <view class="slider-line-background" style="{{sliderLineBackgroundStyle}}"></view>
+      <view class="slider-buffer-line" style="{{sliderBufferLineStyle}}"></view>
+
+      <view class="slider-line" style="{{sliderLineStyle}};{{sliderLineDynamicStyle}};{{sliderBarAnimateStyle}}"></view>
+      <view class="slider-scale-line-wrap" style="{{sliderLineScaleWrapStyle}}">  
+        <view
+          wx:if="{{scaleLine}}"
+          class="slider-scale-line"
+          wx:for="{{scaleLine ? (max - min) / scaleLine + 1 : 0}}"
+          style="{{sliderLineScaleStyle}};transform: translate({{index * (width - valueAlignWidth) / ((max - min) / scaleLine)}}px, {{scaleMargin}}px) rotate({{scalePosition === 'under' ? 0 : 180}}deg); transform-origin:0 {{-sliderWeight / 2}}px">
+        </view>
+        <view
+          wx:if="{{keyScaleLine}}"
+          class="slider-key-line-scale"
+          wx:for="{{keyScaleLine ? (max - min) / keyScaleLine + 1 : 0}}"
+          style="{{sliderLineScaleStyle}};transform: translate({{index * (width - valueAlignWidth) / ((max - min) / keyScaleLine)}}px, {{scaleMargin}}px) rotate({{scalePosition === 'under' ? 0 : 180}}deg); transform-origin:0 {{-sliderWeight / 2}}px">
+        </view>
+
+
+        <view
+          wx:if="{{keyScaleLine}}"
+          class="slider-key-line-scale-number"
+          wx:for="{{keyScaleLine ? (max - min) / keyScaleLine + 1 : 0}}"
+          style="{{sliderLineScaleStyle}};transform: translate({{index * (width - valueAlignWidth) / ((max - min) / keyScaleLine) - 50}}px, {{scalePosition === 'under' ? scaleMargin : scaleMargin - sliderWeight - 18 - 18 - 10}}px)">
+          {{unlimited ? (index + 1 !== (keyScaleLine ? (max - min) / keyScaleLine + 1 : 0))? minNum + index * keyScaleLine : '不限' : minNum + index * keyScaleLine}}
+        </view>
+      </view>
+    </view>
+
+
+    <!-- <view class="slider-line-key-scale"></view> -->
+
+
+    <view class="slider-bar-wrap1"
+      id="wrap1"
+      wx:if="{{showDoubleBarWrap}}"
+      catchtouchmove="touchMoveHandler"
+      catchtouchend="touchEndHandler"
+      catchtouchstart="touchStartHandler"
+      style="{{sliderBarWrapStyle}};{{sliderBarWrapDynamicStyle}};{{sliderBarAnimateStyle}}">
+        <view class="tooltip"
+        style="{{tooltipStyle}};{{tooltipCustomStyle}};"
+        wx:if="{{showTooltip}}"
+        >{{unlimited ? (showDoubleBarWrap ? value[0] : value) > max - step ? '不限' : (showDoubleBarWrap ? value[0] : value) : (showDoubleBarWrap ? value[0] : value)}}</view>
+        <view class="slider"
+        style="{{sliderBarStyle}};{{thumbCustomStyle}};{{sliderBarAnimateStyle}};{{thumbDownCustomStyle}}"></view>
+    </view>
+
+ 
+    <view 
+      class="slider-bar-wrap2"
+      id="wrap2"
+      catchtouchmove="touchMove2Handler"
+      catchtouchstart="touchStart2Handler"
+      catchtouchend="touchEnd2Handler"
+      style="{{sliderBarWrapStyle}};{{sliderBarWrap2DynamicStyle}};{{sliderBarAnimateStyle}}">
+       <view class="tooltip"
+       style="{{tooltipStyle}};{{tooltipCustomStyle}};"
+       wx:if="{{showTooltip}}"
+       >{{unlimited ? (showDoubleBarWrap ? value[1] : value) > max - step ? '不限' : (showDoubleBarWrap ? value[1] : value) : (showDoubleBarWrap ? value[1] : value)}}</view> 
+       <view class="slider"
+       style="{{sliderBarStyle}};{{thumbCustomStyle}};{{sliderBarAnimateStyle}};{{thumbDownCustomStyle}}">
+      </view>
+    </view>
+  </view>
+
+</template>
+
+
+<script>
+
+  import OTS from './objectToStyle.js'
+  import sliderBar1 from './sliderBar1.js'
+  import sliderBar2 from './sliderBar2.js'
+  import sliderBar from './sliderBar.js'
+  import sliderLine from './sliderLine.js'
+  import props from './props.js'
+  import NumberHelper from '../../libs/NumberHelper.js'
+
+  export default {
+    config: {
+      usingComponents: { }
+    },
+    behaviors: [sliderBar, sliderBar1, sliderBar2, sliderLine, props],
+    /**
+     * 组件的属性列表
+     */
+
+    created () {
+      // this.data.max += this.data.step
+    },
+
+    attached() { 
+      if (this.data.unlimited) {
+        this.setData({
+          max: this.data.max + this.data.step
+        })
+      }
+      this.data.value
+      this.data.scaleMargin = this.data.scalePosition === 'under' ? this.data.scaleMargin : -this.data.scaleMargin
+
+
+
+      this.data.fixed = this.data.step.toString().split('.')[1]
+      if (!this.data.fixed) {
+        this.data.fixed = ''
+      }
+      if (this.data.showValue && !this.data.showMaxValue) {
+        this.data.valuePos = 'right'
+      }
+      this.data.scale
+      if (this.data.showValue && this.data.showMaxValue) {
+        this.data.valuePos = 'left'
+      }
+      if (typeof this.properties.value === 'object') {
+        this.data.value[0] = this.data.value[0] < this.data.min ? this.data.min : this.data.value[0]
+        this.data.value[1] = this.data.value[1] < this.data.min ? this.data.min : this.data.value[1]
+        this.data.value[0] = this.data.value[0] > this.data.max ? this.data.max : this.data.value[0]
+        this.data.value[1] = this.data.value[1] > this.data.max ? this.data.max : this.data.value[1]
+        this.data.value[0] = this.data.value[0] > this.data.value[1] ? this.data.value[1] : this.data.value[0]
+        this.offsetX = this.value2Offset(this.data.value[0])
+        this.offset2X = this.value2Offset(this.data.value[1])
+        this.data.showDoubleBarWrap = true
+        this.data.presentValue = [...this.properties.value]
+        // this.data.presentValue[0] = this.properties.valueFormat.cb(this.properties.value[0])
+        // console.log(this.data.presentValue[0])
+        console.log(this.data.value, this.data.offsetX,this.data.offser2X)
+      } else {
+        this.data.value = this.data.value < this.data.min ? this.data.min : this.data.value
+        this.data.value = this.data.value > this.data.max ? this.data.max : this.data.value
+        this.offset2X = this.value2Offset(this.data.value)
+        this.data.showDoubleBarWrap = false
+        this.data.persentValue = this.data.value
+      }
+      console.log(this.data.value)
+      this.setData({
+        showDoubleBarWrap: this.data.showDoubleBarWrap,
+        minNum: this.data.min
+      })
+      // let func = new Function('res', 'return res')
+      // console.log(func(100))
+      // 计算value的位置
+      if (this.data.valuePos === '') {
+        if (this.data.showMaxValue && this.data.showValue) {
+          this.data.valuePos = 'left'
+        } else {
+          this.data.valuePos = 'right'
+        }
+      } else {
+        this.data.valuePos = this.data.valuePos
+      }
+      // 计算对齐值
+  
+      if (this.data.showValue && this.data.showMaxValue) {
+        this.data.valueAlignLeft = 40
+        this.data.valueAlignWidth = 80
+      } else if (!this.data.showValue && !this.data.showMaxValue) {
+        this.data.valueAlignLeft = 20
+        this.data.valueAlignWidth = 40
+      } else {
+        if (this.data.valuePos === 'left') {
+          this.data.valueAlignLeft = 40
+          this.data.valueAlignWidth = 60
+        } else {
+          this.data.valueAlignLeft = 20
+          this.data.valueAlignWidth = 60
+        }
+      }
+      // value 转 offsetX
+  
+      if (this.data.showDoubleBarWrap) {
+        this.data.offsetX = this.value2Offset(this.data.value[0])
+        this.data.offset2X = this.value2Offset(this.data.value[1])
+      } else {
+        this.data.offset2X = this.value2Offset(this.data.value)
+      }
+      // 更新页面
+      this.setData({
+        value: this.data.value,
+        offsetX: this.data.offsetX,
+        offset2X: this.data.offset2X,
+        scaleMargin: this.data.scaleMargin,
+        sliderStyle: OTS(this.sliderStyleObj()),
+        sliderLineTouchStyle : OTS(this.sliderLineTouchStyleObj()),
+        sliderLineBackgroundStyle: OTS(this.sliderLineBackgroundStyleObj()),
+        sliderLineStyle: OTS(this.sliderLineStyleObj()),
+        sliderLineScaleWrapStyle: OTS(this.sliderLineScaleWrapStyleObj()),
+        sliderBarWrapStyle: OTS(this.sliderBarWrapStyleObj()),
+        valueStyle: OTS(this.valueStyleObj()),
+        maxValueStyle: OTS(this.maxValueStyleObj()),
+        sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj()),
+        sliderBarStyle: OTS(this.sliderBarStyleObj()),
+        tooltipStyle: OTS(this.tooltipStyleObj()),
+        sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+        sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+        sliderBufferLineStyle: OTS(this.sliderBufferLineStyleObj()),
+        tooltipCustomStyle: OTS(this.data.tooltipStyle),
+        thumbCustomStyle: OTS(this.data.thumbStyle),
+      })
+      this.triggerEvent('change', { 'value': this.data.value })
+      this.setData({
+        valueAlignWidth: this.data.valueAlignWidth
+      })
+    },
+    ready () {
+      wx.createSelectorQuery().in(this).select('.slider-line-touch').boundingClientRect((res) => {
+        this.data.offsetLeft = res.left
+        this.reMathWrapLeft()
+
+        // console.log(this.data.offsetLeft)
+      }).exec()
+    },
+    /**
+     * 组件的初始数据
+     */
+    data: {
+      valuePos: '',
+      valueAlignLeft: 0,
+      showDoubleBarWrap: false,
+      valueAlignWidth: 0,
+      valueStyle: '',
+      maxValueStyle: '',
+      zIndex: 0,
+      zIndex2: 0,
+      startX: 0,
+      offsetX: 0,
+      start2X: 0,
+      offset2X: 0,
+      presentValue: 0
+    },
+  
+    /**
+     * 组件的方法列表
+     */
+    methods: {
+      reMathWrapLeft () {
+        if (this.data.showDoubleBarWrap) {
+          wx.createSelectorQuery().in(this).select('.slider-bar-wrap1').boundingClientRect((res) => {
+          this.data.wrap1Left = res.left
+        }).exec() 
+        }
+
+        wx.createSelectorQuery().in(this).select('.slider-bar-wrap2').boundingClientRect((res) => {
+          this.data.wrap2Left = res.left
+        }).exec()
+
+      },
+      touchStartLineHandler (e) {
+        this.data.animate = 'all .3s'
+        if (this.data.showDoubleBarWrap) {
+          console.log(e.touches[0].clientX, this.data.wrap1Left + this.data.thumbSize / 2, this.data.wrap2Left + this.data.thumbSize / 2)
+          if (Math.abs(e.touches[0].clientX - this.data.wrap1Left - this.data.thumbSize / 2) < Math.abs(e.touches[0].clientX - this.data.wrap2Left - this.data.thumbSize / 2)) {
+            this.data.offsetX = e.touches[0].clientX - this.data.offsetLeft
+            this.data.value[0] = this.offset2Value(this.data.offsetX)
+            this.data.offsetX = this.value2Offset(this.data.value[0])
+          } else {
+            this.data.offset2X = e.touches[0].clientX - this.data.offsetLeft
+            this.data.value[1] = this.offset2Value(this.data.offset2X)
+            this.data.offset2X = this.value2Offset(this.data.value[1])
+          }
+          this.data.value = [
+            parseInt(this.offset2Value(this.data.offsetX)),
+            parseInt(this.offset2Value(this.data.offset2X))
+          ]
+        } else {
+          this.data.offset2X = e.touches[0].clientX - this.data.offsetLeft
+          this.data.value = this.offset2Value(this.data.offset2X)
+          this.data.value = this.data.min + Math.round((this.data.value - this.data.min) / this.data.step) * this.data.step
+          this.data.offset2X = Number(this.data.value - this.data.min) / (this.data.max - this.data.min) * (this.data.width - this.data.valueAlignWidth)
+          this.data.value = Number((this.offset2Value(this.data.offset2X)).toFixed(this.data.fixed.length))
+        }
+        this.setData({
+          offset2X: this.data.offset2X,
+          offsetX: this.data.offsetX,
+          value: this.data.value,
+          sliderBarAnimateStyle: OTS(this.sliderBarAnimateStyleObj()),
+          sliderBarWrapStyle: OTS(this.sliderBarWrapStyleObj()),
+          sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+          sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+          sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj()),
+          thumbDownCustomStyle: ''
+        })
+        this.emitValue()
+
+      },
+      value2Offset(value) {
+        return Number(value - this.data.min) / (this.data.max - this.data.min) * (this.data.width - this.data.valueAlignWidth)
+      },
+      offset2Value (offset) {
+        return offset / (this.data.width - this.data.valueAlignWidth) * (this.data.max - this.data.min) + this.data.min
+      } ,
+      touchStartHandler(e) {
+        this.data.startX = e.touches[0].clientX - this.data.offsetX
+        this.data.zIndex = 1
+        this.data.zIndex2 = 0
+        this.data.animate = ''
+        this.data.firstIn = true
+        this.setData({
+          sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+          sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+          sliderBarAnimateStyle: OTS(this.sliderBarAnimateStyleObj())
+        })
+        
+      },
+      touchMoveHandler(e) {
+        if (this.data.firstIn) {
+          this.data.firstIn = false
+          this.setData({
+            thumbDownCustomStyle: OTS(this.data.thumbDownStyle)
+          })
+        }
+        // 判断offsetX的距离
+        this.data.offsetX = e.touches[0].clientX - this.data.startX
+        if (this.data.offsetX > this.data.offset2X) {
+          this.data.offsetX = this.data.offset2X
+        } else if (this.data.offsetX < 0) {
+          this.data.offsetX = 0
+        } else if (this.data.offsetX > this.data.width - this.data.valueAlignWidth) {
+          this.data.offsetX = this.data.width - this.data.valueAlignWidth
+        }
+        // 赋值data并更新
+        if (this.data.showDoubleBarWrap) {
+          this.data.value = [
+            Number(this.offset2Value(this.data.offsetX).toFixed(this.data.fixed.length)), 
+            Number(this.offset2Value(this.data.offset2X).toFixed(this.data.fixed.length))
+          ]
+        } else {
+            this.data.value = Number(this.offset2Value(this.data.offsetX).toFixed(this.data.fixed.length))
+        }
+        this.setData({
+          value: this.data.value,
+          sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+          sliderBarWrapStyle: OTS(this.sliderBarWrapStyleObj()),
+          sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj()),
+        })
+        // this.triggerEvent('change', { 'value': this.data.value})
+        this.emitValue()
+
+      },
+      touchEndHandler(e) {
+        this.data.animate = 'all 0.3s'
+        if (this.data.fixed) {
+          this.data.value[0] = Number(this.data.value[0].toFixed(this.data.fixed.length))
+        } else {
+          this.data.value[0] = this.data.min + Math.round((this.data.value[0] - this.data.min) / this.data.step) * this.data.step
+        }
+
+
+        this.data.offsetX = this.value2Offset(this.data.value[0])
+        this.data.animate = 'all 0.3s'
+        this.setData({
+          thumbDownCustomStyle: '',
+          offsetX: this.data.offsetX,
+          value: this.data.value,
+          sliderBarAnimateStyle: OTS(this.sliderBarAnimateStyleObj()),
+          sliderBarWrapStyle: OTS(this.sliderBarWrapStyleObj()),
+          sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+          sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj())
+        })
+        this.reMathWrapLeft()
+        
+        // if(this.data.value)
+        this.emitValue()
+
+
+        // this.triggerEvent('change', { 'value': this.data.value })
+      },
+      touchEnd2Handler(e) {
+        this.data.animate = 'all 0.3s'
+        if (this.data.showDoubleBarWrap) {
+          if (this.data.fixed) {
+            this.data.value[1] = Number(this.data.value[1].toFixed(this.data.fixed.length))
+          } else {
+            this.data.value[1] = this.data.min + Math.round((this.data.value[1] - this.data.min) / this.data.step) * this.data.step
+          }
+          this.data.offset2X =  this.value2Offset(this.data.value[1])
+        } else {
+          if (this.data.fixed) {
+            this.data.value = Number(this.data.value.toFixed(this.data.fixed.length))
+          } else {
+            this.data.value = Number(this.data.min) + Math.round((this.data.value - this.data.min) / this.data.step) * this.data.step
+        }
+          this.data.offset2X = this.value2Offset(this.data.value)
+        }
+        this.setData({
+          offset2X: this.data.offset2X,
+          value: this.data.value,
+          sliderBarAnimateStyle: OTS(this.sliderBarAnimateStyleObj()),
+          sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+          sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj()),
+          thumbDownCustomStyle: ''
+        })
+        this.reMathWrapLeft()
+        this.emitValue()
+        // this.triggerEvent('change', { 'value': this.data.value })
+      },
+      touchStart2Handler(e) {
+        this.data.start2X = e.touches[0].clientX - this.data.offset2X
+        this.data.zIndex = 0
+        this.data.zIndex2 = 1
+        this.data.animate = ''
+        this.data.firstIn = true
+        this.setData({
+          sliderBarWrapDynamicStyle: OTS(this.sliderBarWrapDynamicStyleObj()),
+          sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+          sliderBarAnimateStyle: OTS(this.sliderBarAnimateStyleObj())
+        })
+      },
+      touchMove2Handler(e) {
+        if (this.data.firstIn) {
+          this.data.firstIn = false
+          this.setData({
+            thumbDownCustomStyle: OTS(this.data.thumbDownStyle)
+          })
+        }
+        // 判断offsetX的距离
+        this.data.offset2X = e.touches[0].clientX - this.data.start2X
+        if (this.data.offset2X < this.data.offsetX) {
+          this.data.offset2X = this.data.offsetX
+        } else if (this.data.offset2X > this.data.width - this.data.valueAlignWidth) {
+          this.data.offset2X = this.data.width - this.data.valueAlignWidth
+        } else if (this.data.offset2X < 0) {
+          this.data.offset2X = 0
+        }
+  
+        if (this.data.showDoubleBarWrap) {
+          this.data.value = [
+            Number((this.offset2Value(this.data.offsetX)).toFixed(this.data.fixed.length)),
+            Number((this.offset2Value(this.data.offset2X)).toFixed(this.data.fixed.length))
+          ]
+        } else {
+          this.data.value = Number((this.offset2Value(this.data.offset2X).toFixed(this.data.fixed.length)))
+        }
+        this.setData({
+          value: this.data.value,
+          sliderBarWrapStyle: OTS(this.sliderBarWrapStyleObj()),
+          sliderBarWrap2DynamicStyle: OTS(this.sliderBarWrap2DynamicStyleObj()),
+          sliderLineDynamicStyle: OTS(this.sliderLineDynamicStyleObj()),
+        })
+
+        this.emitValue()
+      },
+      emitValue () {
+        if (this.data.unlimited) {
+          let value
+          if (this.data.showDoubleBarWrap) {
+            value = [...this.data.value]
+            value[0] = value[0] > this.data.max - this.data.step ? 'unlimited' : value[0]
+            value[1] = value[1] > this.data.max - this.data.step ? 'unlimited' : value[1]
+          } else {
+            value = this.data.value
+            value = value > this.data.max - this.data.step ? 'unlimited' : value
+          }
+          this.triggerEvent('change', { 'value': value })
+        } else {
+          this.triggerEvent('change', { 'value': this.data.value })
+        }
+      },
+      sliderStyleObj () {
+        let style = {}
+        style.left = 0
+        style.width = this.data.width + 'px'
+        style.height = this.data.height + 'px'
+        return style
+      },
+  
+      valueStyleObj () {
+        let style = {}
+        if (this.data.valuePos === 'left') {
+          style.left = '6px'
+        } else {
+          style.right = '6px'
+        }
+        return style
+      },
+  
+      tooltipStyleObj() {
+        let style = {}
+        style.color = this.data.activeColor
+        return style
+      },
+  
+      maxValueStyleObj () {
+        let style = {}
+        if (this.data.valuePos === 'left') {
+          style.right = '6px'
+        } else {
+          style.left = '6px'
+        }
+        return style
+      },
+    }
+  }
+  
+  </script>
+
+
+<style lang="less">
+  .ui-slider {
+    font-size: 14px;
+    position: relative;
+    width: 100%;
+    height: 30px;  
+  }
+
+  .ui-slider .value {
+    position: absolute;
+    font-size: 12px;
+    top: 28px;
+  }
+
+  .ui-slider .slider-line-touch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 30px;
+    background-color: transparent;
+  }
+
+  .ui-slider .slider-buffer-line {
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 4px;
+    background-color: #BBB
+  }
+
+
+
+  .ui-slider .slider-line-background {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #BBB
+  }
+
+  .ui-slider .slider-line {
+    position: absolute;
+    left: 0;
+    width: 0;
+    height: 4px;
+    background-color: @theme-color;
+  }
+  .ui-slider .slider-bar-wrap1 {
+    position: absolute
+  }
+
+  .ui-slider .slider-bar-wrap2 {
+    position: absolute
+  }
+
+  .ui-slider .slider {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: white; 
+    box-shadow: 0px 3px 13px 0px #ccc;
+    border-radius: 50%;
+    z-index: 2;
+  }
+
+  .ui-slider .tooltip{
+    position: absolute;  
+    top: -20px;
+    left: 0px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+  } 
+
+  .ui-slider .slider-scale-line {
+    position: absolute;
+    width: 1px;
+    background-color: gray;
+    height: 4px;
+  }
+
+  .ui-slider .slider-key-line-scale {
+    position: absolute;
+    width: 1px;
+    background-color: gray;
+    height: 8px;
+  }
+
+  .ui-slider .slider-key-line-scale-number {
+    position: absolute;
+    width: 100px;
+    top: 18px;
+    text-align: center;
+    height: 10px;
+  }
+
+  .ui-slider .slider-scale-line-wrap{
+    position: absolute;
+  }
+</style>

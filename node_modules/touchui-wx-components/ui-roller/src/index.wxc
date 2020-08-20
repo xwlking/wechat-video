@@ -1,0 +1,106 @@
+<template>
+  <view class="ui-roller" style="height: {{height}}px">
+    <slot></slot>
+  </view>
+</template>
+<script>
+import WxHelper from '../../libs/WxHelper'
+
+const ChildPath = '../../ui-roller-item/dist/index'
+
+export default {
+  relations: WxHelper.getChildRelation(ChildPath),
+  behaviors: [ ],
+  properties: {
+    height: {
+      type: [String, Number],
+      value: 30
+    },
+    speed: {
+      type: [String, Number],
+      value: 300
+    },
+    autoplay: {
+      type: [String, Number],
+      value: 2000
+    },
+    direction: {
+      type: [String],
+      value: 'up'
+    }
+  },
+  data: { 
+    controlArray: []
+  },
+  attached () {
+    this.data.selfAutoplay = Number(this.data.autoplay)
+    this.data.selfSpeed = Number(this.data.speed)
+  },
+  methods: {
+    _getAllLi () {
+      return this.getRelationNodes('../../ui-roller-item/dist/index')
+    },
+    _updateView () { // 開始更新视图
+      setInterval(() => {
+        this.data.controlArray = this.data.controlArray.map(x => x - 1) // 每一个坐标都减一
+        // console.log('减一设置开始')
+
+        for (let i = 0; i < this.data.childNodes.length; i++) {
+          this.data.childNodes[i].setData({ // 赋值给子元素,让子元素进行有动画的
+            animate: true,
+            position: this.data.controlArray[i]
+          })
+        }
+        // console.log('减一设置结束')
+        setTimeout(() => { // 滚动动画完成后的回调函数,把位列-1的变成最后一个
+          this.data.controlArray = this.data.controlArray.map(x => x === -1 ? this.data.childLength - 1: x ) // 
+          // console.log('变二设置开始')
+
+          for (let i = 0; i < this.data.childNodes.length; i++) {
+            if (this.data.controlArray[i] === this.data.childLength - 1) {
+              this.data.childNodes[i].setData({
+                animate: false,
+                position: this.data.controlArray[i]
+              })
+            }
+          }
+          // console.log('变二设置结束')
+
+        }, this.data.selfSpeed); // 滚动动画速度
+      }, this.data.selfAutoplay) // 间隔
+    }
+  },
+  ready () {
+    this.data.childNodes = this._getAllLi()
+    this.data.childLength = this.data.childNodes.length
+    for (let i = 0; i < this.data.childNodes.length; i++) {
+      this.data.controlArray[i] = i
+      let node = this.data.childNodes[i]
+      node.setData({
+        position: i,
+        height: this.data.height,
+        direction: this.data.direction,
+        speed: this.data.selfSpeed
+      })
+    }
+    this._updateView()
+  }
+}
+
+
+</script>
+
+<style lang="less">
+ui-roller {
+  display: inline-block;
+  margin-top: -2px;
+  width: 100%;
+  overflow: hidden;
+}
+.ui-roller {
+  position: relative;
+  width: 100%; 
+  height: 30px;
+  white-space: nowrap;
+}
+</style>

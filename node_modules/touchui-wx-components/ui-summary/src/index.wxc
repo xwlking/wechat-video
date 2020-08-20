@@ -1,0 +1,155 @@
+<template>
+  <view class="ui-summary">
+    <view class="details" style="height: {{detailsObj.height}}px; transition: {{animate ? 'height 0.3s' : ''}}">
+      <slot></slot>
+    </view>
+    <view wx:if="{{showArrow}}"
+      bindtap="touchStartHandler">
+      <view class="button">
+        <image class="button-image" style="transition: {{animate ? 'height 0.3s' : ''}};transform: {{buttonImageObj.transform}}" src="{{triangleImg}}"></image>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  config: {
+    usingComponents: { }
+  },
+  /**
+   * 组件的属性列表
+   */
+   properties: {
+    height: {
+      type: Number,
+      value: 0
+    },
+    state: {
+      type: String,
+      value: 'summary',
+      observer (val) {
+        this.data.selfState = val
+        this.setData({
+          buttonImageObj: this.buttonImageObjFunc(),
+          detailsObj: this.detailsObjFunc()
+        })
+      }
+    },
+    animate: {
+      type: Boolean,
+      value: true
+    },
+    showArrow: {
+      type: Boolean,
+      value: true
+    },
+    detailHeight: { // new
+      type: Number
+    }
+  },
+
+  ready () {
+    this.data.detailHeight = 0;
+    wx.createSelectorQuery().in(this).select('.details').boundingClientRect((res) => {
+      console.log('details', res.height)
+      this.data.detailHeight = res.height
+    }).exec()
+
+
+
+    this.data.selfState = this.properties.state
+    console.log(this.data.selfState)
+    this.setData({
+      buttonImageObj: this.buttonImageObjFunc(),
+      detailsObj: this.detailsObjFunc()
+    })
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    selfState: 'summary',
+    triangleImg: './images/triangle.png',
+    buttonImageObj: {},
+    detailsObj: {}
+  },
+
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    buttonImageObjFunc() {
+      let style = {}
+      console.log(this.data.animate)
+      if (this.data.animate) {
+        console.log('???')
+        style.transition = `transform 0.3s`
+      }
+      if (this.data.selfState === 'summary') {
+        style.transform = 'rotate(0deg)'
+      } else {
+        style.transform = 'rotate(180deg)'
+      }
+      return style
+    },
+    buttonObjFunc() {
+      let style = {}
+      return style
+    },
+    detailsObjFunc () {
+      let style = {}
+      // if (this.animate) {
+      // }
+      style.transition = `height .3s`
+      if (this.data.selfState === 'summary') {
+        style.height = this.data.height
+      } else {
+        style.height = this.data.detailHeight
+      }
+      return style
+    },
+    touchStartHandler() {
+      if (this.data.selfState === 'summary') {
+        this.data.selfState = 'details'
+      } else {
+        this.data.selfState = 'summary'
+      }
+      this.setData({
+        buttonImageObj: this.buttonImageObjFunc(),
+        detailsObj: this.detailsObjFunc()
+      })
+    },
+    touchMoveHandler() {
+      
+    },
+    touchEndHandler() {
+
+    }
+  }
+}
+
+
+</script>
+
+<style>
+ .ui-summary .details {
+  width: 100%;
+  overflow: hidden;
+}
+.ui-summary .button {
+  width: 100%;
+  height: 30px;
+  background-color: white;
+  background-size: 16px;
+  text-align: center;
+  line-height: 30px;
+}
+
+.ui-summary .button  .button-image {
+  display: inline-block;
+  width: 14px;
+  height: 8px;
+}
+</style>

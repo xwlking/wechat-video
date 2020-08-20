@@ -1,0 +1,16 @@
+{
+  "name": "ui-count-down",
+  "version": "1.0.0",
+  "description": "倒计时器 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-count-down"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

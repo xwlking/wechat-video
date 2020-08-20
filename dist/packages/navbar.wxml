@@ -1,0 +1,32 @@
+<view>
+  <ui-nav-bar slot="nav-bar" custom-style="{{ {backgroundColor:bgColor,borderBottom: borderBottom?'1rpx solid #e0e0e0':'none'} }}" _pid="{{_pid}}">
+    <view class="ui-row" style="height:46px;">
+      <view bindtap="{{backIcon?'navigateBack':''}}" class="ui-col ui-col-3 ui-col-align-left align-left valign-middle" style="flex: 0 0 25%;">
+        <view class="ui-col-content align-left valign-middle">
+          <view wx:if="{{backIcon}}" class="backView ui-row" style="">
+            <view style="border-right:1rpx solid #596078;" class="ui-col ui-col-align-center align-center valign-middle">
+              <view class="ui-col-content align-center valign-middle">
+                <span type="arrow-left" class="backIcon ui-icon icon-arrow-left" style="color:{{arrowColor}};font-size: 16px;"></span>
+              </view>
+            </view>
+            <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+              <view class="ui-col-content align-center valign-middle">
+                <span type="jd-home" class="backIcon ui-icon icon-jd-home" style="color:{{arrowColor}};font-size: 16px;"></span>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+        <view class="ui-col-content align-center valign-middle">
+          <text class="appTitle pg_t1" style="color:{{titleColor}};">{{title}}</text>
+        </view>
+      </view>
+      <view class="ui-col ui-col-3" style="flex: 0 0 25%;">
+        <view class="ui-col-content">
+        </view>
+      </view>
+    </view>
+  </ui-nav-bar>
+  <view style="height:{{NAV_HEIGHT}}"></view>
+</view>

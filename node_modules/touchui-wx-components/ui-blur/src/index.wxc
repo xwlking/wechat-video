@@ -1,0 +1,88 @@
+<template>
+  <view class="ui-blur" style="{{ selfStyle }}">
+    <view class="{{ blurClass }}" style="{{ blurStyle }}"></view>
+    <view class="ui-blur-content">
+      <slot></slot>
+    </view>
+  </view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { 
+    url: {
+      type: String,
+      observer (val) {
+        this.setBlur()
+      }
+    },
+    height: {
+      type: Number | String
+    }
+  },
+  data: { 
+    selfStyle: {}
+  },
+  ready () {
+    this.setBlur()
+  },
+  methods: { 
+    setBlur () {
+      let style = { height: this.data.height }
+      let blurStyle = {}
+      let blurClass = ''
+
+      if (wx.IS_IOS) {
+        style.background =  `url('${this.data.url}') no-repeat center -100px / 210%`
+        blurClass = 'ui-blur-ios'
+      } else {
+        blurStyle.backgroundImage = `url('${this.data.url}')`
+        blurClass = 'ui-blur-android'
+      }
+      this.setData({
+        selfStyle: StyleHelper.getPlainStyle(style),
+        blurStyle: StyleHelper.getPlainStyle(blurStyle),
+        blurClass: blurClass
+      })
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-blur {
+  overflow: hidden;
+  position: relative;
+}
+
+.ui-blur-android {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  filter:blur(45px);
+  margin: -10% 0 0 -10%;
+  background-repeat: no-repeat;
+  background-position: center -100px;
+  background-size: 210%;
+}
+
+.ui-blur-ios {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  -webkit-backdrop-filter:blur(35px) saturate(200%);
+}
+
+.ui-blur-content {
+  filter: blur(0);
+}
+</style>

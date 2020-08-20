@@ -1,0 +1,16 @@
+{
+  "name": "ui-divider",
+  "version": "1.0.0",
+  "description": "divider组件 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-divider"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

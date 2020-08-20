@@ -1,0 +1,16 @@
+{
+  "name": "ui-timeline",
+  "version": "1.0.0",
+  "description": "时间轴 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-timeline"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

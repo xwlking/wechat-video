@@ -1,0 +1,66 @@
+<template>
+    <view class="{{mode === 'row' ? 'ui-timeline-row' : 'ui-timeline'}}" style="width:{{ mode === 'row' ? width + 'px' : ''}};">
+      <view class="slot-wrap">
+        <slot></slot>
+      </view>
+    </view>
+</template>
+
+<script>
+import WxHelper from '../../libs/WxHelper'
+
+const ChildPath = '../../ui-timeline-item/dist/index'
+
+
+export default {
+  relations: WxHelper.getChildRelation(ChildPath),
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  data: {
+    width: 375
+  },
+  properties: {
+    mode: String
+  },
+  methods: {
+    _getAllLi () {
+      return this.getRelationNodes(ChildPath)
+    },
+  },
+  ready () {
+    this.data.childrens = this._getAllLi()
+    console.log(this.data.childrens)
+    this.data.childrens.forEach(element => {
+      element.setData({
+        timelineType: this.data.mode
+      })
+    });
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-timeline {
+  position: relative;
+  margin: 10px 0;
+  overflow: hidden;
+  .slot-wrap {
+    margin-top: 10px;
+    padding: 0;
+    bottom: 0;
+  }
+}
+.ui-timeline-row {
+  position: relative;
+  overflow: hidden;
+  .slot-wrap {
+    margin: 0;
+    padding: 0;
+    bottom: 0;
+  }
+}
+</style>

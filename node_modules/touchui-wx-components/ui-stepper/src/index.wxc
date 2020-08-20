@@ -1,0 +1,241 @@
+<template>
+  <view class="ui-stepper" style={{stepperStyle}}>
+    <view class="com stepper-minus {{corner === 'round' ? 'minus-corner': ''}}"
+      style="{{stepperBtnStyle}}"
+      bindtap="minusHandler"
+    >
+      <view class="minus"
+        style="{{minusStyle}}"
+      >
+      </view>
+    </view>
+    <view class="com stepper-content"
+    style="{{stepperNumStyle}}"
+    >
+      {{selfValue}}
+    </view>
+    <view class="com stepper-plus {{corner === 'round' ? 'plus-corner': ''}}"
+      bindtap="plusHandler"
+      style="{{stepperBtnStyle}}"
+    >
+      <view class="plus"
+      style="{{plusStyle}}"
+      ></view>
+      <view class="plus-col"
+      style="{{plusColStyle}}">
+      </view>
+    </view>
+</template>
+
+
+<script>
+import OTS from '../../libs/objectToStyle.js'
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: {
+    width: {
+      type: [String, Number],
+      value: 100
+    },
+    height: {
+      type: [String, Number],
+      value: 30
+    },
+    value: {
+      type: [String, Number],
+      value: 0,
+      observer (val) {
+        console.log(val)
+        if (this.data.selfMax !== undefined && val > this.data.selfMax) {
+          val = this.data.selfMax
+        }
+        if (val < this.data.selfMin) {
+         val = this.data.selfMin
+        }
+        this.setData({
+          selfValue: val,
+          value: val
+        })
+        this.setColor()
+      }
+    },
+    corner: {
+      type: String,
+      value: 'round'
+    },
+    min: {
+      type: [String, Number],
+      value: 0
+    },
+    max: {
+      type: [String, Number]
+    },
+    step: {
+      type: [String, Number],
+      value: 1
+    },
+    color: {
+      type: String,
+      value: '#666'
+    },
+  }, 
+  attached () {
+    this.data.selfStep = Number(this.data.step)
+    console.log(this.data.selfStep)
+    if (this.data.max) {
+      this.data.selfMax = Number(this.data.max)
+    }
+    this.data.selfMin = Number(this.data.min)
+    this.data.selfValue = Number(this.data.value)
+    if (this.data.selfValue < this.data.selfMin) {
+      this.data.selfValue = this.data.selfMin
+    }
+    this.setColor()
+    this.setData({
+      selfValue: this.data.selfValue,
+      stepperBtnStyle: OTS(this.stepperBtnStyleObj()),
+      stepperNumStyle: OTS(this.stepperNumStyleObj()),
+      stepperStyle: OTS(this.stepperStyleObj()),
+      minusStyle: OTS(this.minusStyleObj()),
+      plusStyle: OTS(this.plusStyleObj()),
+      plusColStyle: OTS(this.plusColStyleObj())
+    }) 
+  },
+  data: { },
+  methods: {
+    setColor () {
+      if (this.data.selfValue === this.data.selfMin) {
+        this.data.minusColor = '#ccc'
+      } else {
+        this.data.minusColor = this.data.color
+      }
+      if (this.data.selfValue === this.data.selfMax) {
+        this.data.plusColor = '#ccc'
+      } else {
+        this.data.plusColor = this.data.color
+      }
+      this.setData({
+        minusStyle: OTS(this.minusStyleObj()),
+        plusStyle: OTS(this.plusStyleObj()),
+        plusColStyle: OTS(this.plusColStyleObj())
+      })
+    },
+    minusStyleObj () {
+      let style = {}
+      style.width = this.data.height / 3 + 'px'
+      style.height = 2 + 'px'
+      style['background-color'] = this.data.minusColor
+      style.transform = `translate(${this.data.height / 3 - 3}px, ${this.data.height / 2 - 1}px)`
+      return style
+    },
+    plusStyleObj () {
+      let style = {}
+      style.width = this.data.height / 3 + 'px'
+      style.height = 2 + 'px'
+      style['background-color'] = this.data.plusColor
+      style.transform = `translate(${this.data.height / 3 - 3}px, ${this.data.height / 2 - 1}px)`
+      return style
+    },
+    plusColStyleObj () {
+      let style = {}
+      style.width = 2 + 'px' 
+      style.height = this.data.height / 3 + 'px'
+      style['background-color'] = this.data.plusColor
+      style.transform = `translate(${this.data.height / 2 - 4}px, ${this.data.height / 3 - 2}px)`
+      return style
+    },
+    plusHandler () {
+      this.data.selfValue += this.data.selfStep
+      if (this.data.selfMax !== undefined && this.data.selfValue > this.data.selfMax) {
+          this.data.selfValue = this.data.selfMax
+      }
+      this.setData({
+        selfValue: this.data.selfValue,
+        value: this.data.selfValue
+
+      })
+      this.setColor()
+      this.triggerEvent('addition',  this.data.selfValue)
+    },
+    minusHandler () {
+      this.data.selfValue -= this.data.selfStep
+      if (this.data.selfValue < this.data.selfMin) {
+          this.data.selfValue = this.data.selfMin
+      }
+      this.setData({
+        selfValue: this.data.selfValue,
+        value: this.data.selfValue
+      })
+      this.setColor()
+      this.triggerEvent('subtraction', this.data.selfValue)
+    },
+    stepperStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      style.width = this.data.width + 'px'
+      style['line-height'] = this.data.height + 'px'
+      return style
+    },
+    stepperBtnStyleObj () {
+      let style = {}
+      style.width = this.data.width / 4 + 'px'
+      style.height = this.data.height + 'px'
+      style['font-size'] = this.data.height / 2 + 'px'
+      style['line-height'] = this.data.height + 'px'
+      return style
+    },
+    stepperNumStyleObj () {
+      let style = {}
+      style.width = this.data.width / 2 + 'px'
+      style.height = this.data.height + 'px'
+      style['line-height'] = this.data.height + 'px'
+      return style
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-stepper {
+  position: relative;
+  .com {
+    float: left;
+    text-align: center;
+
+  }
+  .stepper-minus {
+    border: 1px solid #CCC;
+
+    position: relative;
+    .minus {
+      background-color: black;
+    }
+  }
+  .stepper-content {
+    border-bottom: 1px solid #CCC;
+    border-top: 1px solid #CCC;
+  }
+  .stepper-plus {
+    border: 1px solid #CCC;
+    position: relative;
+  }
+
+
+}
+
+.minus-corner{
+    border-radius: 5px 0 0 5px;
+}
+
+.plus-corner {
+  border-radius:  0 5px 5px 0;
+}
+
+
+</style>

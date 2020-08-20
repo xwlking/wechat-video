@@ -1,0 +1,157 @@
+<template>
+  <view class="{{timelineType === 'row' ? 'ui-timeline-item-row' : 'ui-timeline-item'}}">
+    <view 
+    class="ui-timeline-line" 
+    wx:if="{{showLine}}"
+    style="background: {{lineColor}};top: {{top}}px"> </view>
+    <view
+    class="ui-timeline-circle {{pointStyle === 'circle' ? 'circle' : ''}}"
+    style="background: {{pointStyle === 'circle' ? '' : pointColor}};border-color: {{pointStyle === 'circle' ? pointColor : ''}};z-index: 99;"> </view>
+
+    <view
+    wx:if="{{shadow}}"
+    class="ui-timeline-circle-shadow"
+    style="background: {{pointColor}};z-index: 99;"> </view>
+
+  <slot></slot>
+  </view>
+</template>
+
+<script>
+
+import WxHelper from '../../libs/WxHelper'
+import StyleHelper from '../../libs/StyleHelper.js'
+
+const ParentPath = '../../ui-timeline/dist/index'
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  relations: WxHelper.getParentRelation(ParentPath),
+  behaviors: [ ],
+  properties: {
+    timelineType: {
+      type: String,
+      value: 'column'
+    },
+    num: {
+      type: Number,
+      observer (val) {
+      }
+    },
+    lineColor: String,
+    pointColor: String,
+    pointStyle: String,
+    top: {
+      type: [Number, String],
+    },
+    shadow: {
+      type: Boolean,
+      value: true
+    },
+    showLine: {
+      type: Boolean,
+      value: true
+    }
+  },
+  data: { },
+  methods: { },
+  attached () {
+      console.log(this.data.shadowStyle)
+  }
+
+}
+
+
+</script>
+
+<style lang="less">
+
+.ui-timeline-item {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 10px;
+  position: relative;
+  .ui-timeline-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #8a8a8a;
+    position: absolute;
+    left: 26px;
+  }
+  .ui-timeline-circle-shadow {
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;
+    border-radius: 50%;
+    position: absolute;
+    left: 21px;
+    top: -5px;
+  }
+
+
+  .ui-timeline-circle.circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border-color: #8a8a8a;
+    border-width: 1px;
+    border-style: solid;
+    position: absolute;
+    left: 26px;
+    background: #FFF;
+  }
+  .ui-timeline-line {
+    position: absolute;
+    top: 0;
+    left: 30px;
+    width: 2px;
+    height: 100%;
+    background: #8a8a8a;
+  }
+}
+
+.ui-timeline-item-row {
+  float: left;
+  position: relative;
+  list-style: none;
+  margin: 0;
+  text-align: center;
+  height: 60px;
+  .ui-timeline-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #8a8a8a;
+    position: absolute;
+    left: 50%;
+    top: 26px;
+  }
+
+  .ui-timeline-circle-shadow {
+    width: 20px;
+    height: 20px;
+    opacity: .5;
+    border-radius: 50%;
+    position: absolute;
+    left: calc(50% - 7px);
+    top: 21px;
+  }
+
+
+
+  .ui-timeline-line {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    height: 2px;
+    width: 100%;
+    background: #8a8a8a;
+  }
+}
+
+
+
+</style>

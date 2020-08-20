@@ -1,0 +1,241 @@
+/* 1像素解决方案 */
+/*
+ * 清除1px
+ */
+/*
+ * 清除浮动
+ */
+/*
+ * mobile
+ */
+/*
+ * 1px
+ */
+/*
+ * text
+ */
+/* 垂直居中 */
+/* 水平居中 */
+/* 水平垂直居中 */
+/* 超出部分出省略号 */
+/* 多行文本超出部分省略号 */
+.kygt {
+  color: white;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+.bt {
+  background-color: #67c996;
+  height: 28vh;
+  border-bottom-left-radius: 35%;
+  border-bottom-right-radius: 35%;
+}
+.floatView {
+  position: absolute;
+  top: 14vh;
+  width: 94%;
+  margin: 0 3%;
+}
+.headImg {
+  height: 160rpx;
+  width: 160rpx;
+  position: absolute;
+  left: 0;
+  top: -95rpx;
+  border-radius: 100rpx;
+  border: 5rpx solid #eeeeee;
+}
+.nickName {
+  position: absolute;
+  left: 188rpx;
+  top: -80rpx;
+  font-size: 40rpx;
+  color: white;
+  font-weight: 500;
+}
+.gts {
+  position: absolute;
+  top: 8rpx;
+  left: 188rpx;
+  color: #656565;
+  font-size: 24rpx;
+}
+.cn {
+  font-size: 50rpx;
+  font-weight: 500;
+  color: #4eb580;
+}
+.ct {
+  color: #aaaaaa;
+  font-size: 24rpx;
+}
+.cardRow {
+  background-color: white;
+  padding: 2% 2%;
+  margin-bottom: 4%;
+  box-shadow: 0 5rpx 15rpx rgba(0, 0, 0, 0.1);
+  border-radius: 20rpx;
+}
+.cardTitle {
+  font-size: 24rpx;
+}
+.cardTitleR {
+  font-size: 24rpx;
+  color: #c5c2c5;
+}
+.qdtx {
+  width: 100%;
+  font-size: 24rpx;
+}
+.qdDay {
+  margin: 0 1%;
+  padding: 1% 0;
+  border-radius: 15rpx;
+  box-shadow: 0 12rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+.qdc1 {
+  background-color: #67c996;
+}
+.qdc2 {
+  background-color: #f6f6f6;
+}
+.qdPoint {
+  font-size: 22rpx;
+  border-radius: 100%;
+  padding: 10rpx;
+  margin-top: 10rpx;
+  width: 38%;
+}
+.qdp1 {
+  color: white;
+  background-color: #4eb580;
+}
+.qdp2 {
+  color: #656565;
+  background-color: #e5e5e5;
+}
+.qdNum {
+  font-size: 20rpx;
+  color: white;
+  margin-top: 10rpx;
+}
+.qdn1 {
+  color: white;
+}
+.qdn2 {
+  color: #656565;
+}
+.qdts {
+  color: #67c996;
+}
+.qdan {
+  background-color: #67c996;
+  background-image: linear-gradient(60deg, #67c996, #aedb80);
+  width: 68%;
+  padding: 2% 0;
+  color: white;
+  border-radius: 30rpx;
+}
+.taskRow {
+  width: 100%;
+  height: 12vh;
+}
+.tImg {
+  width: 58rpx;
+  height: 58rpx;
+  background-color: #edf6f1;
+  padding: 12%;
+  border-radius: 100%;
+}
+.t_r_c {
+  border-bottom: 1rpx solid #dddddd;
+  padding: 2% 0 2% 1%;
+}
+.tf1 {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+.tf2 {
+  font-size: 24rpx;
+  color: #c5c2c5;
+}
+.tf3 {
+  font-size: 24rpx;
+  color: #f5a720;
+}
+.tf4 {
+  background-color: #67c996;
+  background-image: linear-gradient(60deg, #67c996, #aedb80);
+  color: white;
+  padding: 3% 20%;
+  border-radius: 30rpx;
+  font-size: 22rpx;
+}
+.tf5 {
+  font-size: 20rpx;
+  color: #c5c2c5;
+  margin-top: 5%;
+}
+.rImg {
+  width: 38rpx;
+  height: 38rpx;
+}
+.rhImg {
+  border: 6rpx solid #edf0f6;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 100%;
+}
+.goodsItem {
+  margin: 1%;
+  padding-bottom: 5%;
+}
+.goodsImg {
+  padding: 5%;
+  width: 138rpx;
+  height: 138rpx;
+}
+.goodsTitle {
+  font-size: 26rpx;
+  display: -webkit-box;
+  overflow: hidden;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  padding: 0 2%;
+}
+.goodsPrice {
+  font-size: 22rpx;
+  color: #cccccc;
+  text-decoration: line-through;
+}
+.lvImg {
+  width: 90rpx;
+  height: 43rpx;
+}
+.goodsCnnedCount {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #f5a720;
+}
+.goodsCnnedText {
+  font-size: 22rpx;
+  color: #3b3b3b;
+  font-weight: 400;
+}
+/* switch */
+.wx-switch-input {
+  width: 82rpx !important;
+  height: 40rpx !important;
+}
+/*关闭状态*/
+.wx-switch-input::before {
+  width: 79rpx !important;
+  height: 37rpx !important;
+}
+/*开启状态*/
+.wx-switch-input::after {
+  width: 38rpx !important;
+  height: 37rpx !important;
+}

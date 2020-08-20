@@ -1,0 +1,526 @@
+<template>
+  <view class="ui-v-calendar">
+      <view class="calendar-title">
+          <view wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" class="calendar-weekday">
+            {{item}}
+          </view>
+        </view>
+        <view class="calendar-fixed"></view>
+    <!-- <scroll-view scroll-top="{{scrollTop}}" scroll-y style="{{calendarWrapStyle}}" class="calendar-wrap"> -->
+
+      <view class="calendar-body">
+        <view class="calendar-month-body"
+          wx:for="{{monthsArray}}"
+          wx:for-index="monthIndex"
+          wx:key="monthIndex"
+          wx:for-item="monthItem"
+          style="height:{{monthItem.monthHeight}}px"
+        >
+          <view class="calendar-month-title"
+          style="{{monthTitleStyle}}"
+          >{{monthItem.year}}年{{monthItem.month}}月</view>
+
+          <view class="calendar-day-wrap"
+            bindtap="touchStartHandler"
+            wx:for="{{monthItem.data}}"
+            wx:for-index="dayIndex"
+            wx:key="dayIndex"
+            data-month-index="{{monthIndex}}"
+            data-day-index="{{dayIndex}}"
+            data-item="{{dayItem}}"
+            wx:for-item="dayItem"
+          >
+            <view 
+            class="calendar-day-cell {{disablePastDays && dayItem.isPastDay ? 'is-past-days' : ''}} {{dayItem.isHoliday && dayItem.isThisMonth ? 'is-holiday' : ''}} {{dayItem.isThisMonth ? 'is-this-month' : 'not-this-month'}}  {{myItem.value === dayItem.value ? 'is-selected' : ''}} {{dayItem.value === rangeLeftItem.value ? 'is-selected-left' : ''}} {{dayItem.value === rangeRightItem.value  ? 'is-selected-right' : ''}} {{range.isInRange(inRangeArray, dayItem) ? 'is-selected-in-range' : ''}}"    
+            style="background-color: {{range.isInRange(inRangeArray, dayItem) ? rangeColor : (dayItem.value === rangeLeftItem.value  ? startRangeColor : (dayItem.value === rangeRightItem.value ? endRangeColor : (myItem === dayItem  ? themeColor: '')))}}"
+            >
+              {{dayItem.isThisMonth ? dayItem.day : ''}}
+            </view>
+          </view>
+        </view>
+      </view>
+    <!-- </scroll-view> -->
+  </view>
+  <wxs module="range">
+    module.exports = {
+      isInRange: function (array, item) {
+        var arrayText = [];
+        for (var i = 0; i < array.length; i++) {
+          arrayText.push(array[i].value);
+        }
+        return arrayText.indexOf(item.value) > -1;
+      },
+    }
+  </wxs>
+</template>
+
+<script>
+import props from './props.js'
+import Dater from '../../libs/date.js'
+import OTS from '../../libs/objectToStyle.js'
+var moment = require('moment')
+
+// 
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [props],
+  data: {
+    monthsArray: [],
+    oldItem: undefined,
+    scrollTop: 0,
+    oldRangeLeftItem: undefined,
+    oldRangeRightItem: undefined,
+    heightCount: 50,
+    myItem: undefined,
+    rangeRightItem: undefined,
+    rangeLeftItem: undefined,
+    inRangeArray: []
+  },
+  ready () {
+    this.data.monthsArray.splice(0, this.data.monthsArray.length)
+    let startMonthAnchor
+    let endMonthAnchor
+    if (isNaN(Number(this.data.dateRange[0]))) { // 字符串
+      startMonthAnchor = this.data.dateRange[0] + '/01'
+      endMonthAnchor = this.data.dateRange[1] + '/01'
+    } else {
+      startMonthAnchor = moment().subtract(this.data.dateRange[0], 'months').format('YYYY/MM/DD')
+
+      endMonthAnchor = moment().add(this.data.dateRange[1], 'months').format('YYYY/MM/DD')
+    }
+
+    for (let i = 0;; i++) {
+      let year = moment(startMonthAnchor).year()
+      let month = moment(startMonthAnchor).month() + 1
+      let day = moment(startMonthAnchor).date()
+      let startMonthDater = new Dater(year, month, day).monthDays // Dater使用的是正常月份
+      let monthArray = this.getMonthArray(startMonthDater, i)
+      monthArray.monthIndex = i
+      this.data.monthsArray.push(monthArray)
+      if (moment(startMonthAnchor).isSame(endMonthAnchor, 'month')) { // 相同
+        break
+      }
+      startMonthAnchor = moment(startMonthAnchor).add(1, 'month')
+    }
+
+    
+    if (this.data.value) {
+      if (typeof this.data.value === 'string') {
+        let dIndex = this.momentTransToItem(moment(this.data.value)).dayIndex
+        let mIndex = this.momentTransToItem(moment(this.data.value)).monthIndex
+        this.selectSingle(mIndex, dIndex, false)
+      } else {
+        // 
+        let dIndex = this.momentTransToItem(moment(this.data.value[0])).dayIndex
+        let mIndex = this.momentTransToItem(moment(this.data.value[0])).monthIndex
+        this.selectRange(mIndex, dIndex, false)
+        mIndex = this.momentTransToItem(moment(this.data.value[1])).monthIndex
+        dIndex = this.momentTransToItem(moment(this.data.value[1])).dayIndex
+        this.selectRange(mIndex, dIndex, false)
+      }
+    }
+
+
+
+
+      
+    // }, 3000);
+
+    this.setData({
+      monthsArray: this.data.monthsArray,
+      monthTitleStyle: OTS(this.data.monthTitleStyle),
+      calendarWrapStyle: OTS(this.calendarWrapStyleObj())
+    })
+    let startMoment
+    if (this.data.startShow === 'today') {
+      startMoment = moment()
+    } else {
+      startMoment = moment(this.data.startShow)
+    }
+
+    for (let i = 0; i < this.data.monthsArray.length; i++) {
+      if (this.itemTransToMoment(this.data.monthsArray[i]).isSame(startMoment, 'month')) {
+        this.setData({
+          scrollTop: this.data.monthsArray[i].positionY
+        })
+      }
+    }
+
+  },
+  methods: {
+    calendarWrapStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      return style
+    },
+    itemTransToMoment (item) {
+      if (item.day) {
+        return moment(`${item.year}/${item.month}/${item.day}`)
+      } else {
+        return moment(`${item.year}/${item.month}`)
+      }
+    },
+    momentTransToItem (moment) {
+      for (let i = 0; i < this.data.monthsArray.length; i++) {
+        for (let j = 0; j < this.data.monthsArray[i].data.length; j++) {
+          if (moment.isSame(this.itemTransToMoment(this.data.monthsArray[i].data[j]), 'day')) {
+            return this.data.monthsArray[i].data[j]
+          }
+        }        
+      }
+    },
+    inRangeSelect (rightItem, startI, endI, select) {
+      if (!select) {
+        this.data.inRangeArray.length = 0
+        return
+      }
+      for (let i = startI; i <= endI ; i++) {
+        for (let j = 0; j < this.data.monthsArray[startI].data.length; j++) {
+          // 
+          if (this.data.monthsArray[i].data[j].isThisMonth &&
+          this.itemTransToMoment(this.data.monthsArray[i].data[j]).isAfter(this.itemTransToMoment(this.data.oldRangeLeftItem), 'day') && 
+          this.itemTransToMoment(this.data.monthsArray[i].data[j]).isBefore(this.itemTransToMoment(rightItem), 'day')) {
+              this.data.inRangeArray.push(this.data.monthsArray[i].data[j])
+          }
+          if (this.itemTransToMoment(this.data.monthsArray[i].data[j]).isSame(this.itemTransToMoment(rightItem), 'day')) {
+            break
+          }
+        }
+      }
+      this.setData({
+        inRangeArray: this.data.inRangeArray
+      })
+    },
+    selectRange (mIndex, dIndex, manual) {
+      this.data.inRangeArray.length = 0
+        this.setData({
+        inRangeArray: this.data.inRangeArray
+      })
+      let selectItem = this.data.monthsArray[mIndex].data[dIndex]
+      let selectMoment = this.itemTransToMoment(selectItem)
+      if (selectItem.isPastDay && this.data.disablePastDays) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (selectItem.isForeDay && this.data.disableForeDays) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (selectItem.isToday && !this.data.canSelectToday) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (!this.data.oldRangeLeftItem && !this.data.oldRangeRightItem) { // 两边都没有
+        selectItem.isRangeLeft = true // 变颜色
+        this.data.oldRangeLeftItem = selectItem // 第一支选
+        if (manual) {
+          this.triggerEvent('selectedstart', selectItem.value)
+        }
+        this.setData({
+          rangeLeftItem: selectItem
+        })
+
+
+      } else if (this.data.oldRangeLeftItem, !this.data.oldRangeRightItem) { //左有右没有
+        // maxRange选取
+        if (this.data.maxRange) {
+          if (this.itemTransToMoment(this.data.oldRangeLeftItem).add(this.data.maxRange, 'day').isBefore(selectMoment,'day')) {
+            this.triggerEvent('failed')
+            return
+          }
+        }
+        if (this.itemTransToMoment(this.data.oldRangeLeftItem).isAfter(selectMoment, 'day')) { // 如果选择在之前
+        // this.data.oldRangeLeftItem = this.
+        this.data.oldRangeLeftItem.isRangeLeft = false
+        selectItem.isRangeLeft = true // 变颜色
+        this.data.oldRangeLeftItem = selectItem
+        if (manual) {
+        this.triggerEvent('selectedstart', selectItem.value)
+        }
+        this.setData({
+          rangeLeftItem: selectItem
+        })
+
+
+        } else if (this.itemTransToMoment(this.data.oldRangeLeftItem).isBefore(selectMoment, 'day')) { // 如果选择在之后
+          selectItem.isRangeRight = true // 变颜色
+          this.data.oldRangeRightItem = selectItem // 老东西
+          let startI = this.data.oldRangeLeftItem.monthIndex
+          let endI = selectItem.monthIndex
+          this.inRangeSelect(selectItem, startI, endI, true)
+          if (manual) {
+          this.triggerEvent('selectedend', [this.data.oldRangeLeftItem.value,selectItem.value])
+          }
+          this.setData({
+            rangeRightItem: selectItem
+          })
+
+        } else {
+          selectItem.isRangeLeft = false // 变颜色
+          this.data.oldRangeLeftItem = undefined
+        }
+      } else { //如果都有
+        let startI = this.data.oldRangeLeftItem.monthIndex
+        let endI = this.data.oldRangeRightItem.monthIndex
+        this.inRangeSelect(this.data.oldRangeRightItem, startI, endI, false)
+        this.data.oldRangeLeftItem.isRangeLeft = false
+        this.data.oldRangeRightItem.isRangeRight = false
+        this.data.oldRangeRightItem = undefined
+        selectItem.isRangeLeft = true // 变颜色
+        this.data.oldRangeLeftItem = selectItem // 老东西
+        if (manual) {
+        this.triggerEvent('selectedstart', selectItem.value)
+        }
+        this.setData({
+          rangeLeftItem: selectItem,
+          rangeRightItem: {value: ''}
+        })
+      }
+    },
+    selectSingle (mIndex, dIndex, manual) {
+
+      let selectItem = this.data.monthsArray[mIndex].data[dIndex]
+
+      if (selectItem.isPastDay && this.data.disablePastDays) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (selectItem.isForeDay && this.data.disableForeDays) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (selectItem.isToday && !this.data.canSelectToday) {
+        this.triggerEvent('failed')
+        return
+      }
+      if (this.data.oldItem) {
+        
+        this.data.oldItem.isClicked = false   
+      }
+      this.data.monthsArray[mIndex].data[dIndex].isClicked = true
+      this.data.oldItem = this.data.monthsArray[mIndex].data[dIndex]
+      if (manual) {
+        this.triggerEvent('change', selectItem.value)
+      }
+      this.setData({
+        myItem: this.data.monthsArray[mIndex].data[dIndex]
+      })
+      
+
+      // this.$emit('change', this.AnchorToDayString(this.timeAnchor))
+    },
+    touchStartHandler (e) {
+      let mIndex = e.currentTarget.dataset.monthIndex
+      let dIndex = e.currentTarget.dataset.dayIndex
+      let selectItem = this.data.monthsArray[mIndex].data[dIndex]
+
+      if (this.data.selectRangeMode) {
+        this.selectRange(mIndex, dIndex, true)
+      } else {
+        this.selectSingle(mIndex, dIndex, true)
+      }
+
+      // this.setData({
+      //   monthsArray: this.data.monthsArray
+      // })
+      // this.data.monthsArray['monthIndex'].
+      // e.currentTarget.dataset.item.isThisMonth = false
+      // 
+    },
+    getMonthArray (date, monthIndex) {
+      let monthArray = {}
+      let lineCount = 0
+      var count = 0
+      monthArray.data = []
+
+      monthArray.year = date.year
+      monthArray.month = date.month
+      if (date.preMonthDays.length >= 7) {
+        date.preMonthDays.splice(date.preMonthDays.length - 7, 7)
+        lineCount++
+      }
+      for (let i = 0; i < date.preMonthDays.length; i++) {
+        let obj = {}
+        obj.day = date.preMonthDays[i]
+        obj.month = date.month
+        obj.year = date.year
+        obj.value = `${obj.year}/${obj.month < 10 ? '0' : ''}${obj.month}/${obj.day < 10 ? '0' : ''}${obj.day}`
+        obj.isThisMonth = false    
+        obj.isClicked = false
+        obj.isRangeLeft = false
+        obj.isRangeRight = false
+        obj.isInRange = false
+        obj.monthIndex = monthIndex
+        obj.dayIndex = count
+        if ([0, 6].indexOf((moment(obj.value).weekday())) !== -1) {
+          obj.isHoliday = true
+        }
+        monthArray.data.push(obj)
+        count++
+      }
+      for (let i = 0; i < date.thisMonthDays.length; i++) {
+        let obj = {}
+        obj.day = date.thisMonthDays[i]
+        obj.month = date.month
+        obj.year = date.year
+        obj.isThisMonth = true
+        obj.isClicked = false
+        obj.isRangeLeft = false
+        obj.isRangeRight = false
+        obj.isInRange = false
+        obj.monthIndex = monthIndex
+        obj.dayIndex = count
+        obj.value = `${obj.year}/${obj.month < 10 ? '0' : ''}${obj.month}/${obj.day < 10 ? '0' : ''}${obj.day}`
+
+        if ([0, 6].indexOf((moment(obj.value).weekday())) !== -1) {
+          obj.isHoliday = true
+        }
+        if (moment(`${obj.year}/${obj.month}/${obj.day}`).isBefore(moment(), 'day')) {
+          obj.isPastDay = true
+          obj.isForeDay = true
+          obj.isToday = false
+        } else if (moment(`${obj.year}/${obj.month}/${obj.day}`).isAfter(moment(), 'day')) {
+          obj.isPastDay = false
+          obj.isForeDay = true
+          obj.isToday = false
+        } else {
+          obj.isPastDay = false
+          obj.isForeDay = false
+          obj.isToday = true
+        }
+        monthArray.data.push(obj)
+        count++
+      }
+      if (date.nextMonthDays.length >= 7) {
+        date.nextMonthDays.splice(date.nextMonthDays.length - 7, 7)
+        lineCount++
+      }
+
+      for (let i = 0; i < date.nextMonthDays.length; i++) {
+        let obj = {}
+        obj.day = date.nextMonthDays[i]
+        obj.month = date.month
+        obj.year = date.year
+        obj.isThisMonth = false
+        obj.isClicked = false
+        obj.isRangeLeft = false
+        obj.isRangeRight = false
+        obj.isInRange = false
+        obj.monthIndex = monthIndex
+        obj.dayIndex = count
+        obj.value = `${obj.year}/${obj.month < 10 ? '0' : ''}${obj.month}/${obj.day < 10 ? '0' : ''}${obj.day}`
+        if ([0, 6].indexOf((moment(obj.value).weekday())) !== -1) {
+          obj.isHoliday = true
+        }
+        monthArray.data.push(obj)
+        count++
+      }
+      monthArray.positionY = this.data.heightCount - 50
+
+      if (lineCount === 0) {
+        monthArray.monthHeight = 350
+      } else if (lineCount === 1) {
+        monthArray.monthHeight = 300
+      } else {
+        monthArray.monthHeight = 250
+      }
+      this.data.heightCount += monthArray.monthHeight
+
+      return monthArray
+
+    },
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-v-calendar {
+  background-color: white;
+  .calendar-title {
+    height:50px;
+    position: fixed;
+    width: 100%;
+    background-color: white;
+    height: 50px;
+    .calendar-weekday {
+      height:50px;
+      width:14.2857%;
+      float: left;
+      line-height: 50px;
+      text-align: center;
+    }
+  }
+  .calendar-fixed {
+    height:50px;
+    width: 100%;
+    height: 50px;
+  }
+  .calendar-wrap {
+    height: 200px;
+  }
+  .calendar-body{
+    .calendar-month-body{
+      .calendar-month-title{
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+      }
+      .calendar-day-wrap {
+        height:50px;
+        width:14.2857%;
+        float: left;
+        text-align: center;
+        vertical-align: middle;
+        line-height: 50px;
+        .calendar-day-cell {
+          width: 32px;
+          height: 32px;
+          line-height: 32px;
+          margin: 9px auto;
+          border-radius: 16px;
+        }
+        .not-this-month {
+          display: none;
+        }
+        .is-this-month {
+          color: black
+        }
+        .is-holiday {
+          color: red;
+          background-color: white;
+        }
+        .is-today {
+          background-color: #808080;
+          color: white;       
+        }
+        .is-selected {
+          background-color: @theme-color;
+          color: white;
+        }
+        .is-selected-left {
+          background-color: @theme-color;
+          color: white;
+        }
+        .is-selected-right {
+          background-color: red;
+          color: white;
+        }
+        .is-selected-in-range {
+          background-color: pink;
+          color: white;
+        }
+        .is-past-days {
+          color: gray;
+        }
+        .is-fore-days {
+          color: gray;
+        }
+      }
+    }
+  }
+}
+</style>

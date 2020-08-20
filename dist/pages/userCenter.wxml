@@ -1,0 +1,208 @@
+<view class="container">
+  <!-- <ui-nav-bar slot="nav-bar">
+      <ui-row height="46">
+        <ui-col vertical-align="middle" align="center">
+          <text class="kygt">流光小视频</text>
+        </ui-col>
+      </ui-row>
+    </ui-nav-bar> -->
+
+  <view class="bt"></view>
+
+  <view class="floatView">
+    <view class="cardRow ui-row" style="">
+      <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+        <view class="ui-col-content align-center valign-middle">
+          <image mode="aspectFill" class="headImg" src="https://wx.qlogo.cn/mmhead/mlF7szRVKJhw5Hdx0u5YyibRTliamaLSDrObpQPaJ3oZo/132" />
+          <text class="nickName">Leon</text>
+          <text class="gts">等级: 初级铲屎官</text>
+          <view style="width:100%;margin: 16% 0 2% 0;" class="ui-row">
+            <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+              <view class="ui-col-content align-center valign-middle">
+                <text class="cn">99999</text>
+                <text class="ct">可用罐头</text>
+              </view>
+            </view>
+            <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+              <view class="ui-col-content align-center valign-middle">
+                <text class="cn">10</text>
+                <text class="ct">罐头排名</text>
+              </view>
+            </view>
+            <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+              <view class="ui-col-content align-center valign-middle">
+                <text class="cn">200</text>
+                <text class="ct">今日觅食</text>
+              </view>
+            </view>
+          </view>
+          <!-- <ui-row style="width:100%;">
+            <ui-col vertical-align="middle" align="center">
+              <image mode="aspectFill" style="width:100rpx;height:100rpx;" src="https://wx.qlogo.cn/mmhead/mlF7szRVKJhw5Hdx0u5YyibRTliamaLSDrObpQPaJ3oZo/132"/>
+            </ui-col>
+            <ui-col vertical-align="middle" align="left">
+              金毛犬  安娜
+            </ui-col>
+          </ui-row> -->
+        </view>
+      </view>
+    </view>
+
+    <!-- <ui-row class="cardRow">
+        <ui-col vertical-align="middle" align="center">
+          <ui-row style="width:100%;height:60rpx;">
+            <ui-col class="cardTitle" vertical-align="middle" align="left">
+              <text>已连续签到<text class="qdts"> 5 </text>天</text>
+            </ui-col>
+            <ui-col class="qdtx" vertical-align="middle" align="right">
+              签到提醒
+            </ui-col>
+            <ui-col span="2" vertical-align="middle" align="right">
+              <switch color="#55B990"/>
+            </ui-col>
+          </ui-row>
+          <ui-row style="width:100%;" space="18">
+            <ui-col class="qdDay qdc1" style="margin-left:0;" vertical-align="middle" align="center">
+              <text class="qdPoint qdp1">+1</text>
+              <text class="qdNum qdn1">第1天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc1" vertical-align="middle" align="center">
+              <text class="qdPoint qdp1">+2</text>
+              <text class="qdNum qdn1">第2天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc1" vertical-align="middle" align="center">
+              <text class="qdPoint qdp1">+3</text>
+              <text class="qdNum qdn1">第3天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc1" vertical-align="middle" align="center">
+              <text class="qdPoint qdp1">+4</text>
+              <text class="qdNum qdn1">第4天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc1" vertical-align="middle" align="center">
+              <text class="qdPoint qdp1">+5</text>
+              <text class="qdNum qdn1">第5天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc2" vertical-align="middle" align="center">
+              <text class="qdPoint qdp2">+6</text>
+              <text class="qdNum qdn2">第6天</text>
+            </ui-col>
+            <ui-col class="qdDay qdc2" style="margin-right:0;" vertical-align="middle" align="center">
+              <text class="qdPoint qdp2">+7</text>
+              <text class="qdNum qdn2">第7天</text>
+            </ui-col>
+          </ui-row>
+        </ui-col>
+      </ui-row> -->
+
+    <view class="cardRow ui-row" style="padding:0 2%;">
+      <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+        <view class="ui-col-content align-center valign-middle">
+          <view style="width:100%;" class="ui-row-list">
+            <view class="ui-row" style="height:50px;">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 40px;">
+                <view class="ui-col-content align-center valign-middle">
+                  <!-- <ui-icon type="template" size="20" color="#545454"></ui-icon> -->
+                  <image style="width:45rpx;height:45rpx;" src="../static/images/zz.png" />
+                </view>
+              </view>
+              <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                <view class="ui-col-content align-left valign-middle">
+                  我家主子
+                </view>
+              </view>
+              <!-- <ui-col vertical-align="middle" align="left">
+                <image style="width:45rpx;height:45rpx;border:1rpx solid #cccccc;border-radius: 100rpx;" src="https://wx.qlogo.cn/mmhead/mlF7szRVKJhw5Hdx0u5YyibRTliamaLSDrObpQPaJ3oZo/132"/>
+                <image style="width:45rpx;height:45rpx;border:1rpx solid #cccccc;border-radius: 100rpx;" src="https://wx.qlogo.cn/mmhead/mlF7szRVKJhw5Hdx0u5YyibRTliamaLSDrObpQPaJ3oZo/132"/>
+              </ui-col> -->
+              <view class="ui-col valign-middle" style="flex:0 0 25px;">
+                <view class="ui-col-content valign-middle">
+                  <!-- <ui-icon type="plus"></ui-icon> -->
+                  <span type="arrow-right" class="ui-icon icon-arrow-right" style="font-size: 16px;"></span>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="cardRow ui-row" style="">
+      <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+        <view class="ui-col-content align-center valign-middle">
+          <view style="width:100%;" class="ui-row-list">
+            <view class="ui-row" style="height:50px;">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 40px;">
+                <view class="ui-col-content align-center valign-middle">
+                  <span type="gift" size="20" color="#545454" class="ui-icon icon-gift" style="color: #545454;font-size: 20px;"></span>
+                </view>
+              </view>
+              <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                <view class="ui-col-content align-left valign-middle">
+                  我的兑换
+                </view>
+              </view>
+              <view class="ui-col valign-middle" style="flex:0 0 25px;">
+                <view class="ui-col-content valign-middle">
+                  <span type="arrow-right" class="ui-icon icon-arrow-right" style="font-size: 16px;"></span>
+                </view>
+              </view>
+            </view>
+            <view class="ui-row" style="height:50px;">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 40px;">
+                <view class="ui-col-content align-center valign-middle">
+                  <span type="login_03" size="20" color="#545454" class="ui-icon icon-login_03" style="color: #545454;font-size: 20px;"></span>
+                </view>
+              </view>
+              <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                <view class="ui-col-content align-left valign-middle">
+                  收货地址
+                </view>
+              </view>
+              <view class="ui-col valign-middle" style="flex:0 0 25px;">
+                <view class="ui-col-content valign-middle">
+                  <span type="arrow-right" class="ui-icon icon-arrow-right" style="font-size: 16px;"></span>
+                </view>
+              </view>
+            </view>
+            <view class="ui-row" style="height:50px;">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 40px;">
+                <view class="ui-col-content align-center valign-middle">
+                  <span type="qn-activity" size="20" color="#545454" class="ui-icon icon-qn-activity" style="color: #545454;font-size: 20px;"></span>
+                </view>
+              </view>
+              <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                <view class="ui-col-content align-left valign-middle">
+                  罐头明细
+                </view>
+              </view>
+              <view class="ui-col valign-middle" style="flex:0 0 25px;">
+                <view class="ui-col-content valign-middle">
+                  <span type="arrow-right" class="ui-icon icon-arrow-right" style="font-size: 16px;"></span>
+                </view>
+              </view>
+            </view>
+            <view class="ui-row" style="height:50px;">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 40px;">
+                <view class="ui-col-content align-center valign-middle">
+                  <span type="service" size="20" color="#545454" class="ui-icon icon-service" style="color: #545454;font-size: 20px;"></span>
+                </view>
+              </view>
+              <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                <view class="ui-col-content align-left valign-middle">
+                  联系客服
+                </view>
+              </view>
+              <view class="ui-col valign-middle" style="flex:0 0 25px;">
+                <view class="ui-col-content valign-middle">
+                  <span type="arrow-right" class="ui-icon icon-arrow-right" style="font-size: 16px;"></span>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+
+  </view>
+</view>

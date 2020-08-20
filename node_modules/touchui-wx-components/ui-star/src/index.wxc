@@ -1,0 +1,180 @@
+<template>
+  <view class="ui-star" style="{{starsWrapStyle}}">
+    <view class="stars-wrap" 
+      style="{{starsWrapStyle}}"
+      bindtap="tapHandler"
+      >
+      <view class="star-wrap" 
+        wx:for="{{starArray}}"
+        wx:key="{{index}}"
+        style="{{starWrapStyle}}">
+        <image src="{{data[item + 'Src']}}"></image>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import OTS from '../../libs/objectToStyle.js'
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: {
+    data: {
+      type: [Array, Object],
+      value: {
+        normalSrc: './images/starnone.png',
+        selectedSrc: './images/starfull.png',
+        halfSrc: './images/starhalf.png'
+      },
+      observer (val) {
+        console.log(val)
+        this.setData({
+          starArray: this.data.starArray,
+          data: val
+        })
+      }
+    },
+    starWidth: {
+      type: [Number, String],
+      value: 35
+    },
+    starHeight: {
+      type: [Number, String],
+      value: 35
+    },
+    half: {
+      type: Boolean,
+      value: false
+    },
+    value: {
+      type: [Number, String],
+      value: 0,
+      observer (val) {
+        this.selectStar(val)
+      }
+    },
+    length: {
+      type: [Number, String],
+      value: 5
+    },
+    readonly: {
+      type: Boolean,
+      value: false
+    }
+  },
+  data: {
+    starArray:[],
+    selfValue: 0,
+    selfLength: 0,
+    selfStarWidth: 0,
+    selfStarHeight: 0
+  },
+  attached () {
+    this.data.selfLength = Number(this.data.length)
+    this.data.selfValue = Number(this.data.value)
+    console.log(this.data.selfLength)
+    this.data.selfStarWidth = Number(this.data.starWidth)
+    this.data.selfStarHeight = Number(this.data.starHeight)
+
+
+    this.setData({
+      selfLength: this.data.selfLength,
+      selfValue: this.data.selfValue,
+      selfStarWidth: this.data.selfStarWidth,
+      selfStarHeight: this.data.selfStarWidth,
+      starsWrapStyle: OTS(this.starsWrapStyleObj()),
+      starWrapStyle: OTS(this.starWrapStyleObj()),
+    })
+
+    this.selectStar(this.data.selfValue) 
+  },
+  methods: {
+    /* 
+      星星个数
+    */
+    tapHandler (e) {
+      if (this.data.readonly) {
+        return
+      }
+      // let offsetX = (e.detail.x - e.currentTarget.offsetLeft)
+      wx.createSelectorQuery().in(this).select('.stars-wrap').boundingClientRect((res) => {
+        let offsetX = e.detail.x - res.left
+        let percent = offsetX / (this.data.selfStarWidth * this.data.selfLength)
+        let value
+        if (this.data.half) {
+          value = Number(percent * this.data.selfLength).toFixed(1)
+          if (Number(value.split('.')[1]) < 5) { // 是否小于5
+            value = this.selectStar(Math.floor(value.split('.')[0]) + 0.5)
+          } else {
+            value = this.selectStar(Math.floor(value.split('.')[0]) + 1)
+          }
+        } else {
+          value = this.selectStar(Math.floor(percent * this.data.selfLength) + 1)
+        }
+        this.triggerEvent('change', value)
+      }).exec()
+    },
+    selectStar (value) {
+      value = Number(value)
+      this.data.starArray.length = 0
+      let starNum = Math.floor(value)
+      let fixNum = Number(('' + value).split('.')[1])
+      let count = 0
+      for (let i = 0; i < starNum; i++) {
+        this.data.starArray.push('selected')
+        count++
+      }
+      if (fixNum) {
+        this.data.starArray.push('half')
+        count++
+      }
+      for (let i = count; i < this.data.length; i++) {
+        this.data.starArray.push('normal')
+      }
+      this.setData({
+        starArray: this.data.starArray,
+        value: value
+      })
+      return value
+    },
+    starsWrapStyleObj () {
+      let style = {}
+      style.height = this.data.selfStarHeight + 'px'
+      style.width = this.data.selfStarWidth * this.data.selfLength + 'px'
+      return style
+    },
+    starWrapStyleObj () {
+      let style = {}
+      style.height = this.data.selfStarHeight + 'px'
+      style.width = this.data.selfStarWidth + 'px'
+      return style
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+  .ui-star {
+
+
+    .stars-wrap {
+
+      .star-wrap {
+        float: left;
+      } 
+
+    }
+    image{
+      width: 100%;
+      height: 100%;
+      display:block;
+    }
+  }
+
+</style>

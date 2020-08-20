@@ -1,0 +1,16 @@
+{
+  "name": "ui-roller",
+  "version": "1.0.0",
+  "description": "滚动屏 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-roller"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

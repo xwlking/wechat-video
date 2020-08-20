@@ -1,0 +1,70 @@
+<template>
+  <view class="ui-v-tab {{ active ? 'active' : '' }}" style="{{ selfStyle }}" bindtap="handleTap">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+import WxHelper from '../../libs/WxHelper'
+import MultiHelper from '../../libs/MultiHelper'
+
+const ParentPath = '../../ui-v-tabs/dist/index'
+
+export default {
+  relations: WxHelper.getParentRelation(ParentPath),
+  data: { 
+    selfStyle: '',
+    index: -1,
+    active: false,
+    width: 0,
+    height: 0
+  },
+  ready () {
+    this._init()
+  },
+  methods: {
+    _init () {
+      let parent = this.getRelationNodes(ParentPath)[0]
+
+      WxHelper.getComponentRect(this, '.ui-v-tab')
+        .then((rect) => {
+          parent._increaseWalkDistance(rect)
+
+          this.setData({
+            width: rect.width,
+            height: rect.height,
+            index: MultiHelper.getChildIndex(parent, this)
+          })
+        })
+    },
+    handleTap () {
+      let parent = this.getRelationNodes(ParentPath)[0]
+      parent.handleIndexChange(this.data.index, false)
+    }
+  }
+}
+</script>
+
+<style lang="less">
+ui-v-tab {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+.ui-v-tab {
+  padding: 14px 18px;
+  position: relative;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  width: 100%;
+
+  &.active {
+    color: @theme-color;
+    border-right: 1px solid @theme-color;
+  }
+}
+</style>

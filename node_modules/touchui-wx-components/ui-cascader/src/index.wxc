@@ -1,0 +1,426 @@
+<template>
+  <view class="ui-cascader" style={{cascaderStyle}}>
+    <view wx:if="{{showTitle}}" class="cascader-name-wrap">
+      <view class="cascader-name-item-wrap {{seqItem.selected ? 'cascader-name-item-wrap-clicked' : ''}} "
+        style="color: {{seqItem.selected ? themeColor: ''}};border-bottom:{{seqItem.selected ? '2px solid ' + themeColor : ''}};"
+        wx:for="{{seqData}}"
+        wx:key="{{seqIndex}}"
+        wx:for-item="seqItem"
+        wx:for-index="seqIndex"
+        data-index="{{seqIndex}}"
+        bindtap="seqItemTapHandler"
+        >
+        <!-- <view class="cascader-name-item-name"> -->
+          {{seqItem[nameKey]}}
+        <!-- </view> -->
+      </view>
+      <!-- <view class="cascader-name-underline"></view> -->
+    </view>
+    <view class="cascader-content-view" style="width: {{width}}px; overflow:hidden">
+      <view class="cascader-content-wrap" style="{{cascaderContentWrapStyle}}">
+        <scroll-view class="cascader-block"
+          scroll-y
+          style="{{cascaderBlockStyle}}"
+          wx:for="{{newArray}}"
+          wx:key="{{blockIndex}}"
+          wx:for-item="blockItem"
+          wx:for-index="blockIndex"
+        >
+          <view class="cascader-block-item"
+            wx:for="{{blockItem}}"
+            wx:key="{{index}}"
+            wx:for-item="item"
+            wx:for-index="index"
+            data-item="{{item}}"
+            data-index="{{index}}"
+            bindtap="itemTapHandler"
+          >
+            <view class="cascader-item {{item.selected ? 'cascader-item-clicked' : ''}} {{   border ? 'cascader-item-border' : ''}}"
+              style="color:{{item.selected ? themeColor : ''}};"
+            >
+              {{item[nameKey]}}
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import OTS from '../../libs/objectToStyle.js'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  attached () {
+    this.reAttached()
+  },
+  ready () {
+    this.reReady()
+  },
+  behaviors: [ ],
+  properties: {
+    data: {
+      type: Array,
+      value: [],
+      observer () { 
+        this.reAttached()
+        this.reReady()
+      }
+    },
+    width: {
+      type: [Number, String],
+      value: '100%'
+    },
+    height: {
+      type: Number,
+      value: 300
+    },
+    themeColor: {
+      type: String,
+      value: ''
+    },
+    showTitle: {
+      type: Boolean,
+      value: true
+    },
+    nameKey: {
+      type: String,
+      value: 'name'
+    },
+    valueKey: {
+      type: String,
+      value: 'value'
+    },
+    border: {
+      type: Boolean,
+      default: true
+    },
+  },
+  data: {
+    newArray: [],
+    step: 0,
+    dynamicWidth: 0,
+    seqData: [{name: '请选择', selected: true}]
+  },
+  methods: {
+    // cascaderItemStyleObj () {
+    //   let style = {}
+    //   style.color = this.data.themeColor
+    //   return style
+    // },
+    
+    reAttached () {
+      this.data.titleMargin = this.data.showTitle ? 50 : 0
+      let traver = true
+      for (let i = 0; i < this.data.data.length; i++) {
+        if (this.data.data[i].children) {
+          traver = false
+          break
+        }
+      }
+      console.log(traver)
+      if (traver) {
+        var setting = {
+          data: {
+            simpleData: {
+              idKey: "value",
+              pIdKey: "parent",
+              enable: true
+            },
+            key: {
+              children: "children"
+            },
+          }
+        }
+        this.data.data = this.transition(setting, this.data.data)
+      }
+    },
+    reReady () {
+      this.data.newArray = []
+      this.data.newArray.push([])
+      this.data.data.forEach(element => {
+        element.deep = this.data.step
+        this.data.newArray[0].push(element)
+      });
+
+      this.setData({
+        newArray: this.data.newArray,
+        cascaderStyle: OTS(this.cascaderStyleObj())
+      })
+
+      wx.createSelectorQuery().in(this).select('.ui-cascader').boundingClientRect((res) => {
+        if (res) {
+          this.data.dynamicWidth = res.width / 2
+          this.data.blockWidth = this.data.dynamicWidth
+          this.setData({
+            cascaderContentWrapStyle: OTS(this.cascaderContentWrapStyleObj()),
+            cascaderBlockStyle: OTS(this.cascaderBlockStyleObj())
+          })
+        }
+      }).exec()
+    },
+    cascaderBlockStyleObj () {
+      let style = {}
+      style.width = this.data.blockWidth + 'px'
+      style.height = this.data.height - this.data.titleMargin + 'px'
+      return style
+    },
+    cascaderContentWrapStyleObj () {
+      let style = {}
+      let trans
+      if (this.data.showTitle) {
+        style.height = this.data.height - this.data.titleMargin + 'px'
+      } else {
+        style.height = this.data.height + 'px'
+      }
+      if (this.data.transmode === 'showtrans') {
+        trans = -this.data.selectseqIndex * this.data.blockWidth
+      } else {
+        if (this.data.step > 1) {
+        trans = -(this.data.step - 1) * this.data.blockWidth
+        } else {
+          trans = 0
+        }
+      }
+      style.transform = `translate3d(${trans}px, 0, 0)`
+      style.width = this.data.dynamicWidth + 'px'
+      return style
+    },
+    cascaderStyleObj () {
+      let style = {}
+      if (('' + this.data.width).indexOf('%') > -1) {
+        style.width = this.data.width
+      } else {
+        style.width = this.data.width + 'px'
+      }
+      style.height = this.data.height + 'px'
+      return style
+    },
+    nextStep (e, tbmode) {
+      let selectIndex = e.currentTarget.dataset.index
+      this.data.step++
+      this.data.newArray.push([])
+      if (!this.data.newArray[this.data.step - 1][selectIndex].children) { // 点击最后的一项
+        this.data.seqData.forEach ((element) => {
+          element.selected = false
+        })
+        this.data.newArray[this.data.step - 1].forEach ((element) => {
+          element.selected = false
+        })
+        this.data.newArray[this.data.step - 1][selectIndex].selected = true
+        this.data.step--
+        this.data.seqData.splice(-1, 1, {
+          value: e.currentTarget.dataset.item.value,
+          name: e.currentTarget.dataset.item.name,
+          selected: true
+        })
+        this.setData({
+          newArray: this.data.newArray,
+          seqData: this.data.seqData
+        })
+        console.log(this.data.seqData)
+        let send = []
+        this.data.seqData.forEach((element) => {
+          let obj = {}
+          obj[this.data.nameKey] = element[this.data.nameKey]
+          obj[this.data.valueKey] = element[this.data.valueKey]
+          send.push()
+        })
+        this.triggerEvent('selected', this.data.seqData)
+        return
+      }
+      //添加轨迹词语
+      if (!tbmode) {
+        this.data.seqData.splice(-1, 0, {
+          name: e.currentTarget.dataset.item.name,
+          value: e.currentTarget.dataset.item.value
+        })
+        this.data.seqData[this.data.seqData.length - 1].name = "请选择"
+      } else {
+        this.data.seqData.splice(-1, 0, {name: e.currentTarget.dataset.item.name})
+        this.data.seqData.forEach ((element) => {
+
+          element.selected = false
+        })
+        this.data.seqData[this.data.seqData.length - 1].name = "请选择"
+        this.data.seqData[this.data.seqData.length - 1].selected = true
+      }
+
+      // 更新宽及其transfrom
+
+      this.data.dynamicWidth = (e.currentTarget.dataset.item.deep + 2) * this.data.blockWidth
+      this.setData({
+        cascaderContentWrapStyle: OTS(this.cascaderContentWrapStyleObj()),
+      })
+
+      // 换颜色
+
+      this.data.newArray[this.data.step - 1].forEach((element) => {
+        element.selected = false
+      })
+      this.data.newArray[this.data.step - 1][selectIndex].selected = true
+
+      this.data.newArray[this.data.step - 1][selectIndex].children.forEach(element => {
+        element.deep = this.data.step
+        element.selected = false
+        this.data.newArray[this.data.step].push(element)
+      });
+      this.setData({
+        newArray: this.data.newArray,
+        seqData: this.data.seqData
+      })
+    },
+    turnBackStep (e) {
+      let selectIndex = e.currentTarget.dataset.index
+      let selectBlock = e.currentTarget.dataset.item.deep
+      this.data.newArray = this.data.newArray.slice(0, selectBlock + 1)
+      this.data.step = selectBlock 
+
+      // 退回到某数组
+
+      this.data.seqData.splice(this.data.step, this.data.seqData.length - this.data.step - 1)
+
+
+      this.nextStep(e, true)
+    },
+    transition (setting, sNodes) {
+        if(setting.data.simpleData.enable){
+            var i, l,
+                key = setting.data.simpleData.idKey,
+                parentKey = setting.data.simpleData.pIdKey,
+                childKey = setting.data.key.children;
+            if(!key || key == "" || !sNodes) return [];
+            var r = [];
+            var tmpMap = {};
+            for(i = 0, l = sNodes.length; i < l; i++) {
+                tmpMap[sNodes[i][key]] = sNodes[i];
+            };
+            for(i = 0, l = sNodes.length; i < l; i++) {
+                if(tmpMap[sNodes[i][parentKey]] && sNodes[i][key] != sNodes[i][parentKey]) {
+                    if(!tmpMap[sNodes[i][parentKey]][childKey])
+                        tmpMap[sNodes[i][parentKey]][childKey] = [];
+                    tmpMap[sNodes[i][parentKey]][childKey].push(sNodes[i]);
+                } else {
+                    r.push(sNodes[i]);
+                }
+            };
+            return r;
+        }else{
+            return sNodes;
+        }
+    },
+    itemTapHandler (e) {
+      console.log(e.currentTarget.dataset.item.name)
+
+
+
+      this.data.transmode = 'addtrans'
+      if (e.currentTarget.dataset.item.deep < this.data.step) {
+        this.turnBackStep(e)
+      } else {
+        this.nextStep(e)
+      }
+    },
+    seqItemTapHandler (e) {
+
+      this.data.transmode = 'showtrans'
+      this.data.selectseqIndex = e.currentTarget.dataset.index
+      this.data.seqData.forEach((element) => {
+        element.selected = false
+      })
+      this.data.seqData[e.currentTarget.dataset.index].selected = true
+      if (this.data.step !== e.currentTarget.dataset.index) {
+        this.setData({
+          cascaderContentWrapStyle: OTS(this.cascaderContentWrapStyleObj())
+        })
+      }
+      this.setData({
+        seqData: this.data.seqData,
+      })
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-cascader {
+  overflow: hidden;
+  background-color: #F5F5F5;
+  .cascader-wrap {
+
+  }
+
+  .cascader-name-wrap {
+    background-color: white;
+    position: relative;
+    border-bottom: 1px solid #F5F5F5;
+    height: 50px;
+  }
+
+  .cascader-name-item-wrap {
+    height: 50px;
+    padding-left: 8px;
+    padding-right: 8px;
+    float: left;
+    text-align: center;
+    line-height: 50px;
+    color: black;
+    border-bottom: 0px solid black;
+  }
+
+  .cascader-item-border {
+        border-bottom: 1px solid #F5F5F5;
+
+  }
+
+  .cascader-name-item-wrap-clicked {
+    color: @theme-color;
+    /* border-bottom: 2px solid @theme-color; */
+  }
+
+  /* .cascader-name-item-wrap:last-of-type {
+    border-bottom: 2px solid red;
+
+  } */
+
+
+
+
+  .cascader-content-wrap {
+    background-color: white;
+    transition: 0.1s transform linear;
+  }
+
+
+  .cascader-block {
+    float: left;
+    height: 250px;
+
+
+    .cascader-block-item {
+      height: 40px;
+      padding-left: 8px;
+      padding-right: 8px;
+      line-height: 40px;
+      .cascader-item{
+        overflow: hidden;
+        text-overflow:ellipsis;
+        white-space: nowrap;
+        /* display: inline; */
+        /* width: 100%; */
+        /* border-bottom: 1px solid #F5F5F5; */
+      }
+      .cascader-item-clicked {
+        color: @theme-color;
+      }
+
+    }
+  }
+
+  
+}
+</style>

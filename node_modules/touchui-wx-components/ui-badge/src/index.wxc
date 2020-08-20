@@ -1,0 +1,120 @@
+<template>
+  <span style="{{ selfCustomStyle }}" class="ui-badge {{ text === '' ? 'ui-badge-dot' : '' }} {{ isSingleNumber ? 'ui-badge-single' : '' }}">
+    {{ selfText }}
+    <span wx:if="{{ isNumberOverLength }}" class="plus">+</span>
+    <block wx:if="{{ isStringOverLength }}">...</block>
+  </span>
+</template>
+
+<script>
+import StringHelper from '../../libs/StringHelper'
+import StyleHelper from '../../libs/StyleHelper'
+
+const getText = function (text, maxlength) {
+  let length = text.toString().length
+  if (length > maxlength) {
+    if (StringHelper.isNumber(text)) {
+      return (Math.pow(10, maxlength) - 1)
+    } else {
+      return text.substring(0, maxlength)
+    }
+  }
+  return text
+}
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: {
+    text: {
+      type: String | Number,
+      value: '',
+      observer () {
+        this.setText()
+      }
+    },
+    maxlength: {
+      type: String | Number,
+      value: 2
+    },
+    customStyle: {
+      type: String | Object
+    }
+  },
+  data: { 
+    selfText: ''
+  },
+  ready () {
+    this.setText()
+  },
+  methods: {
+    setText () {
+      let { text, maxlength, customStyle } = this.data
+      let isSingleNumber = false
+      let isNumberOverLength = false
+      let isStringOverLength = false
+
+      if (StringHelper.isNumber(text)) {
+        if (text.length === 1) {
+          isSingleNumber = true
+        }
+        isNumberOverLength = maxlength < text.length
+      } else {
+        isStringOverLength = maxlength < text.length
+      }
+      let selfText = getText(text, maxlength)
+
+      this.setData({
+        isSingleNumber: isSingleNumber,
+        isNumberOverLength: isNumberOverLength,
+        isStringOverLength: isStringOverLength,
+        selfText: selfText,
+        selfCustomStyle: StyleHelper.getPlainStyle(customStyle)
+      })
+    }
+   }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-badge {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  background: #ff2a00;
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  padding: 0 6px 0 7px;
+  background-clip: padding-box;
+  vertical-align: middle;
+
+  .plus {
+    display: inline;
+    padding-left: 1px;
+    line-height: 12px;
+    font-weight: bold;
+    transform: translateY(-1px);
+  }
+
+  &.ui-badge-single {
+    padding: 0;
+    width: 16px;
+  }
+
+  &.ui-badge-dot {
+    height: auto;
+    padding: 5px
+  }
+  &.small-dot {
+    padding: 3px;
+  }
+}
+
+
+</style>

@@ -1,0 +1,106 @@
+<template>
+  <view class="ui-segment-item {{ isFirst ? 'ui-segment-item-first' : '' }} {{ isLast ? 'ui-segment-item-last' : '' }} {{ active ? 'active' : '' }}" style="{{ selfStyle }}" bindtap="handleChange">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+import WxHelper from '../../libs/WxHelper'
+import MultiHelper from '../../libs/MultiHelper'
+
+const ParentPath = '../../ui-segment/dist/index'
+
+export default {
+  relations: WxHelper.getParentRelation(ParentPath),
+  data: { 
+    selfStyle: '',
+    index: -1,
+    active: false,
+    isFirst: false,
+    isLast: false
+  },
+  ready () {
+    this._init()
+  },
+  methods: {
+    _init () {
+      let parent = this.getRelationNodes(ParentPath)[0]
+
+      WxHelper.getComponentRect(this, '.ui-segment-item')
+        .then((rect) => {
+          let index = MultiHelper.getChildIndex(parent, this)
+          this.setData({
+            index: index,
+            isFirst: index === 0,
+            isLast: index === parent.data.children.length - 1
+          })
+        })
+    },
+    handleChange () {
+      let parent = this.getRelationNodes(ParentPath)[0]
+      parent.handleIndexChange(this.data.index, false)
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+@segment-item-border: 1px solid @theme-color;
+@segment-item-border-radius: 4px;
+
+ui-segment-item  {
+  display: inline-block;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.ui-segment-item {
+  flex: 1;
+
+  max-width: 100px;
+  padding: 0 1em;
+  height: 32px;
+
+  transition: .1s all linear;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  color: @theme-color;
+  border-top: @segment-item-border;
+  border-bottom: @segment-item-border;
+  background: transparent;
+
+  line-height: 30px;
+
+  &.active {
+    opacity: 1;
+    color: #fff;
+    background-color: @theme-color;
+  }
+
+  &:active:not(.active) {
+    background-color: lighten(@theme-color, 30%);
+  }
+
+  &.ui-segment-item-first {
+    border-right:  @segment-item-border;
+    border-left: @segment-item-border;
+    border-top-left-radius: @segment-item-border-radius;
+    border-bottom-left-radius: @segment-item-border-radius;
+  }
+
+  &:not(.ui-segment-item-first):not(.ui-segment-item-last) {
+    border-right: @segment-item-border;
+  }
+
+  &.ui-segment-item-last {
+    border-right:  @segment-item-border;
+    border-top-right-radius: @segment-item-border-radius;
+    border-bottom-right-radius: @segment-item-border-radius;
+  }
+}
+</style>

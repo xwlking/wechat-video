@@ -1,0 +1,80 @@
+<template>
+  <view class="ui-roller-item" style="{{itemStyle}};{{positionStyle}}">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+import WxHelper from '../../libs/WxHelper'
+import StyleHelper from '../../libs/StyleHelper.js'
+const ParentPath = '../../ui-roller/dist/index'
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  relations: WxHelper.getParentRelation(ParentPath),
+  behaviors: [ ],
+  properties: {
+    position: {
+      type: [String, Number],
+      observer (val) {
+        // console.log('观察到变化')
+        this.setData({
+          itemStyle: StyleHelper.getPlainStyle(this.itemStyleObj()),
+          positionStyle: StyleHelper.getPlainStyle(this.positionStyleObj())
+        })
+      }
+    },
+    height: {
+      type: [Number, String],
+      value: 0
+    },
+    animate: {
+      type: Boolean,
+
+    }
+  },
+  data: { 
+    index: 0
+  },
+  created () {
+  },
+  methods: {
+    itemStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      return style
+    },
+    positionStyleObj () {
+      let style = {}
+      style['z-index'] = this.data.position === 0 ? 5 : 0
+      if (this.data.direction === 'up') {
+        style.transform = `translate3d(0, ${this.data.position * this.data.height}px, 0)`
+      } else {
+        style.transform = `translate3d(0, ${-this.data.position * this.data.height}px, 0)`
+      }
+      if (this.data.animate) {
+        style.transition = `transform ${this.data.speed / 1000}s`
+      } else {
+        style.transition = null
+      }
+      return style
+    }
+  }
+}
+</script>
+
+<style lang="less">
+ui-roller-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 30px;
+  width: 300px;
+}
+.ui-roller-item {
+  background-color: #fff;
+  // -webkit-backface-visibility: hidden;
+}
+</style>

@@ -1,0 +1,147 @@
+  @import "./color.less";
+
+ /* Link
+  @@@@@@@@@@@@@ */
+  @link-color: #475669;
+  @link-hover-color: @color-primary;
+
+  /* Border
+  @@@@@@@@@@@@@ */
+  @border-width-base: 1px;
+  @border-style-base: solid;
+  @border-color-base: @color-grey;
+  @border-color-hover: #8492a6;
+  @border-base: @border-width-base @border-style-base @border-color-base;
+  @border-radius-base: 4px;
+  @border-radius-small: 2px;
+  @border-radius-circle: 100%;
+  @shadow-base: 0 0 2px fadein(@color-black, 0.18), 0 0 1px @color-blue-light;
+
+  /* Box-shadow
+  @@@@@@@@@@@@@ */
+  @box-shadow-base: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+  @box-shadow-dark: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .12);
+
+  /* Fill
+  @@@@@@@@@@@@@ */
+  @fill-base: @color-white;
+
+  /* Font
+  @@@@@@@@@@@@@ */
+  @font-size-base: 14px;
+  @font-color-base: #1f2d3d;
+  @font-color-disabled-base: #bbb;
+
+  /* Size
+  @@@@@@@@@@@@@ */
+  @size-base: 14px;
+
+  /* z-index
+  @@@@@@@@@@@@@ */
+  @index-normal: 1;
+  @index-top: 1000;
+  @index-popper: 2000;
+
+  /* Disable base
+  @@@@@@@@@@@@@ */
+  @disabled-fill-base: #EFF2F7;
+  @disabled-color-base: #bbb;
+  @disabled-border-base: #D3DCE6;
+
+  /* Icon
+  @@@@@@@@@@@@@ */
+  @icon-color: #666;
+
+
+  /* Input
+  @@@@@@@@@@@@@ */
+  @input-font-size: @font-size-base;
+  @input-color: @font-color-base;
+  @input-width: 140px;
+  @input-height: 36px;
+  @input-shadow-hover: @shadow-base;
+  @input-border: @border-base;
+  @input-border-color: @border-color-base;
+  @input-border-radius: @border-radius-base;
+  @input-border-color-hover: @border-color-hover;
+  @input-fill: @color-white;
+  @input-fill-disabled: @disabled-fill-base;
+  @input-color-disabled: @font-color-disabled-base;
+  @input-icon-color: @color-grey;
+  @input-placeholder-color: #99a9bf;
+  @input-max-width: 314px;
+
+  @input-hover-border: @border-color-hover;
+
+  @input-focus-border: @color-primary;
+  @input-focus-fill: @color-white;
+
+  @input-disabled-fill: @disabled-fill-base;
+  @input-disabled-border: @disabled-border-base;
+  @input-disabled-color: @disabled-color-base;
+  @input-disabled-placeholder-color: @color-grey;
+
+  @input-large-font-size: 16px;
+  @input-large-height: 42px;
+
+  @input-small-font-size: 13px;
+  @input-small-height: 30px;
+
+  @input-mini-font-size: 12px;
+  @input-mini-height: 22px;
+
+  /* Button
+  @@@@@@@@@@@@@ */
+  @button-font-size: 14px;
+  @button-border-radius: @border-radius-base;
+  @button-paddding: 5px 20px;
+  @button-padding-vertical: 0;
+  @button-padding-horizontal: 15px;
+  @button-line-height: 2.75555556;
+
+  @button-large-font-size: 16px;
+  @button-large-padding-vertical: 0;
+  @button-large-padding-horizontal: 19px;
+
+  @button-small-font-size: 12px;
+  @button-small-padding-vertical: 0;
+  @button-small-padding-horizontal: 9px;
+
+  @button-mini-font-size: 11px;
+  @button-mini-padding-vertical: 0;
+  @button-mini-padding-horizontal: 4px;
+
+  @button-default-color: #1F2D3D;
+  @button-default-fill: #f8f8f8;
+  @button-default-border: #c4c4c4;
+
+  @button-ghost-color: #666;
+  @button-ghost-fill: transparent;
+  @button-ghost-border: none;
+
+  @button-disabled-color: #eee;
+  @button-disabled-fill: #EFF2F7;
+  @button-disabled-border: @disabled-border-base;
+
+  @button-primary-border: @color-primary;
+  @button-primary-color: #f8f8f8;
+  @button-primary-fill: @color-primary;
+
+  @button-success-border: @color-success;
+  @button-success-color: #f8f8f8;
+  @button-success-fill: @color-success;
+
+  @button-warning-border: @color-warning;
+  @button-warning-color: #f8f8f8;
+  @button-warning-fill: @color-warning;
+
+  @button-danger-border: @color-danger;
+  @button-danger-color: #f8f8f8;
+  @button-danger-fill: @color-danger;
+
+  @button-info-border: @color-info;
+  @button-info-color: #f8f8f8;
+  @button-info-fill: @color-info;
+
+  @button-hover-tint-percent: 20%;
+  @button-active-shade-percent: 10%;

@@ -1,0 +1,16 @@
+{
+  "name": "ui-tab",
+  "version": "1.0.0",
+  "description": "tab组件 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-tab"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

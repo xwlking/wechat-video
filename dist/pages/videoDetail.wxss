@@ -1,0 +1,76 @@
+/* 1像素解决方案 */
+/*
+ * 清除1px
+ */
+/*
+ * 清除浮动
+ */
+/*
+ * mobile
+ */
+/*
+ * 1px
+ */
+/*
+ * text
+ */
+/* 垂直居中 */
+/* 水平居中 */
+/* 水平垂直居中 */
+/* 超出部分出省略号 */
+/* 多行文本超出部分省略号 */
+.infoImg {
+  width: 42rpx;
+  height: 42rpx;
+}
+.titleText {
+  font-size: 36rpx;
+  font-weight: 500;
+}
+.shareBut {
+  background-color: unset;
+}
+.shareBut::after {
+  border: 0;
+}
+.pit {
+  font-size: 25rpx;
+  color: #666666;
+}
+.bottomFixedView {
+  background-color: white;
+}
+.commentText {
+  color: #666666;
+  border-left: 5rpx solid #50b0d0;
+  padding-left: 2%;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+.moreVideoItemImg {
+  height: 100%;
+  width: 100%;
+  border-radius: 8%;
+}
+.viewCountTip {
+  position: absolute;
+  padding: 0 2%;
+  background-color: black;
+  opacity: 0.6;
+  border-radius: 8rpx;
+  color: white;
+  font-size: 20rpx;
+  bottom: 3%;
+  right: 2%;
+}
+.listViewCount {
+  font-size: 22rpx;
+  color: #666666;
+}
+.text-content-breif {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

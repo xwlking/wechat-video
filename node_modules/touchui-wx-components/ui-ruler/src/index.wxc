@@ -1,0 +1,271 @@
+<template>
+  <view class="ui-ruler" style="{{rulerStyle}}">
+    <view class="ui-ruler-pointer" style="z-index:999;{{rulerPointerStyle}}"></view>
+    
+    <view class="value-wrap">
+    <view class="value" style="position:absolute;{{selfValueStyle}}">{{(selfValue < 0 ? 0 : selfValue) + selfMin}}</view>
+    </view>
+
+    <scroll-view scroll-left="{{leftForSure}}"
+    bindtouchstart="touchStartHandler"
+    bindtouchend="touchEndHandler"
+      bindscroll="scrollHandler"
+      class="ui-ruler-scroll-view"
+      style="{{scrollViewStyle}}"
+      scroll-x>
+
+      <!-- <canvas class="ui-ruler-wrap" style="{{rulerWrapStyle}}" canvas-id="firstCanvas"></canvas> -->
+
+
+      <view class="ui-ruler-wrap" style="{{rulerWrapStyle}}">
+        <view class="ui-ruler-scale-line"
+          wx:for="{{(selfMax - selfMin) / step  + 1}}"
+          style="left:{{index * (selfStepWidth + selfLineWidth) + padding}}px;height:{{lineHeight}}px; top: {{mode === 'bottom' ? height - lineHeight : 0}}px;background-color:{{color}}"
+        ></view>
+        <view class="ui-ruler-key-scale-line"
+          wx:for="{{(selfMax - selfMin) / step / (keyStep / step) + 1}}"
+          style="left:{{index * (selfStepWidth + selfLineWidth) * (keyStep / step) + padding}}px;height:{{keyLineHeight}}px;top: {{mode === 'bottom' ? height - keyLineHeight : 0}}px;background-color:{{color}}"
+        ></view>
+        <view class="ui-ruler-key-scale-line-number"
+          wx:if="{{showNumber}}"
+          wx:for="{{(selfMax - selfMin) / step / (keyStep / step) + 1}}"
+          style="left:{{index * (selfStepWidth + selfLineWidth) * (keyStep / step) - 50 + padding}}px;{{numberPaddingStyle}};font-size:{{numberSize}}px;color:{{numberColor}}"
+        >{{selfMin + index * keyStep}}</view>
+        <view class="ui-ruler-padding" style="{{rulerPaddingStyle}}"></view>
+      </view>
+
+    </scroll-view>
+  </view>
+</template>
+
+<script>
+import OTS from '../../libs/objectToStyle.js'
+import StyleHelper from '../../libs/StyleHelper.js'
+import props from './props.js'
+export default {
+  config: {
+    usingComponents: {  
+    }
+  },
+  behaviors: [props],
+  data: {
+    padding: 0,
+    currentTimeStamp: 0,
+    leftForSure: 0,
+    canMove: false,
+    canEnd: false,
+    selfValue: 0,
+    oldValue: 0
+  },
+  created () {
+
+  },
+  ready () {
+    if (this.data.value) {
+        this.data.selfValue = Number(this.data.value) - this.data.selfMin
+    } else {
+      this.data.selfValue = 0
+    }
+
+    this.data.leftForSure = this.data.selfValue * (this.data.selfLineWidth + this.data.selfStepWidth)
+
+    this.setData({
+      selfValue : this.data.selfValue,
+      leftForSure: this.data.leftForSure
+    })
+
+  },
+  attached () {
+    this.data.lineHeight = this.data.lineHeight || Number(this.data.height) / 4
+    this.data.keyLineHeight = this.data.keyLineHeight || Number(this.data.lineHeight) * 2
+
+    this.data.selfValueStyle = StyleHelper.getPlainStyle(this.data.valueStyle)
+
+    this.data.selfStepWidth = Number(this.data.stepWidth)
+    this.data.selfLineWidth = Number(this.data.lineWidth)
+    this.data.selfMin = Number(this.data.min)
+    this.data.selfMax = Number(this.data.max)
+    this.data.value = Number(this.data.value)
+    this.data.step = Number(this.data.step)
+    this.data.keyStep = Number(this.data.keyStep)
+    this.data.pointerWidth = Number(this.data.pointerWidth)
+    this.data.selfWidth = Number(this.data.width)
+    if (this.data.width) {
+      this.data.selfWidth = Number(this.data.width)
+    } else {
+      this.data.selfWidth = wx.getSystemInfoSync().windowWidth
+    }
+    this.data.padding = this.data.selfWidth / 2
+
+    if (!this.data.numberPadding) {
+      this.setData({
+        numberPadding: this.data.numberSize / 2,
+      })
+    } else {
+      this.setData({
+        numberPadding: this.data.numberPadding,
+      })
+    }
+    console.log(this.data.numberPadding)
+    this.setData({
+      lineHeight: this.data.lineHeight,
+      keyLineHeight: this.data.keyLineHeight,
+      selfValueStyle: this.data.selfValueStyle,
+      selfStepWidth: this.data.selfStepWidth,
+      selfLineWidth: this.data.selfLineWidth,
+      selfMin: this.data.selfMin,
+      selfMax: this.data.selfMax,
+      value: this.data.value,
+      step: this.data.step,
+      keyStep: this.data.keyStep,
+      pointerWidth: this.data.pointerWidth
+    })
+    this.setData({
+      padding: this.data.padding,
+      rulerWrapStyle: OTS(this.rulerWrapStyleObj()),
+      rulerStyle: OTS(this.rulerStyleObj()),
+      rulerPointerStyle: OTS(this.rulerPointerStyleObj()),
+      scrollViewStyle: OTS(this.scrollViewStyleObj()),
+      rulerPaddingStyle: OTS(this.rulerPaddingStyleObj()),
+      numberPaddingStyle: OTS(this.numberPaddingStyleObj())
+    })
+  },
+  methods: {
+    touchStartHandler (e) {
+      this.data.canMove = false
+    },
+    touchEndHandler () {
+      this.data.canMove = true
+      if (this.data.canEnd) {
+        this.data.selfValue = Math.round((this.data.offsetValue) / (this.data.selfStepWidth + this.data.selfLineWidth) * this.data.step)
+        this.data.leftForSure = Math.round((this.data.offsetValue) / (this.data.selfStepWidth + this.data.selfLineWidth) * this.data.step / this.data.step) * this.data.step / this.data.step * (this.data.selfStepWidth + this.data.selfLineWidth)
+        this.setData({
+          selfValue: this.data.selfValue,
+          leftForSure: this.data.leftForSure
+        })
+      }
+    },
+    scrollHandler (e) {
+      this.data.offsetValue = e.detail.scrollLeft
+      this.data.selfValue = Math.round((this.data.offsetValue) / (this.data.selfStepWidth + this.data.selfLineWidth) * this.data.step)
+      if (this.data.oldValue !== this.data.selfValue) {
+        this.setData({
+          selfValue: this.data.selfValue
+        })
+      }
+      this.data.oldValue = this.data.selfValue
+      setTimeout(() => {
+        if (this.data.offsetValue === e.detail.scrollLeft && this.data.canMove) {
+          this.data.leftForSure = Math.round((this.data.offsetValue) / (this.data.selfStepWidth + this.data.selfLineWidth) * this.data.step / this.data.step) * this.data.step / this.data.step * (this.data.selfStepWidth + this.data.selfLineWidth)
+          this.setData({
+            selfValue: this.data.selfValue,
+            leftForSure: this.data.leftForSure
+          })
+          this.data.canEnd = true
+        }
+      }, 100);
+      this.triggerEvent('change', this.data.selfValue)
+    }, 
+    rulerWrapStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      style.width = this.data.padding * 2 + (this.data.selfStepWidth + this.data.selfLineWidth) * (this.data.selfMax - this.data.selfMin) / this.data.step + 'px'
+      if (this.data.mode === 'bottom') {
+        style['border-bottom'] = `1px solid ${this.data.color}`
+      } else {
+        style['border-top'] = `1px solid ${this.data.color}`
+      }
+      // style.width = this.data.selfWidth + 'px' // 待定
+      return style
+    },
+    numberPaddingStyleObj () {
+
+
+      let style = {}
+      if (this.data.mode === 'top') {
+        style.top = Number(this.data.keyLineHeight) + Number(this.data.numberPadding) + 'px'
+      } else {
+        style.top = Number(this.data.height) - Number(this.data.keyLineHeight) - Number(this.data.numberPadding) - Number(this.data.numberSize) + 'px'
+      }
+      return style
+    },
+    rulerStyleObj () {
+      let style= {}
+      style.height = this.data.height + 'px'
+      style.width = this.data.selfWidth + 'px'
+      return style
+    },
+    scrollViewStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      style.width = this.data.selfWidth + 'px'
+      return style
+    },
+    rulerPaddingStyleObj () {
+      let style = {}
+      style.width  = this.data.padding
+      return style
+    },
+    rulerPointerStyleObj () {
+      let style = {}
+      style.width = this.data.pointerWidth + 'px'
+      style['background-color'] = this.data.pointerColor
+      style.height = this.data.height + 'px'
+      style.left = this.data.padding + 'px'
+      return style
+    }
+  }
+}
+</script>
+
+<style lang='less'>
+.ui-ruler {
+  position: relative;
+  .value {
+    z-index: 9999;
+  }
+}
+
+
+
+.ui-ruler .ruler-wrap {
+}
+
+.ui-ruler .ui-ruler-scale-line {
+  position: absolute;
+  width: 1px;
+  background-color: gray;
+  height: 4px;
+}
+
+.ui-ruler .ui-ruler-key-scale-line {
+  position: absolute;
+  width: 1px;
+  background-color: gray;
+  height: 8px;
+}
+
+.ui-ruler .ui-ruler-key-scale-line-number {
+  position: absolute;
+  width: 100px;
+  text-align: center;
+  height: 8px;
+  line-height: 100%;
+}
+
+.ui-ruler-padding {
+  position: absolute;
+}
+
+.ui-ruler-borderline{
+  position: absolute;
+  width: 300px;
+  height: 1px;
+}
+
+.ui-ruler-pointer {
+  position: absolute;
+
+}
+
+</style>

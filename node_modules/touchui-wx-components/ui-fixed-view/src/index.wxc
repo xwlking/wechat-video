@@ -1,0 +1,49 @@
+<template>
+  <view class="ui-fixed-view" style="{{ selfStyle }}">
+    <slot></slot>
+  </view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { 
+    top: {
+      type: String | Number
+    },
+    right: {
+      type: String | Number
+    },
+    bottom: {
+      type: String | Number
+    },
+    left: {
+      type: String | Number
+    }
+  },
+  data: { },
+  ready () {
+    this.setData({
+      selfStyle: StyleHelper.getPlainStyle({
+        top: this.data.top,
+        right: this.data.right,
+        bottom: this.data.bottom,
+        left: this.data.left
+      })
+    })
+  },
+  methods: { }
+}
+
+
+</script>
+
+<style>
+.ui-fixed-view {
+  position: fixed;
+}
+</style>

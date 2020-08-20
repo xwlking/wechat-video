@@ -1,0 +1,286 @@
+<template>
+  <scroll-view scroll-with-animation class="ui-tabs ui-tabs-x" style="{{ selfStyle }}" scroll-x="{{ true }}" scroll-left="{{ scrollLeft }}">
+    <slot></slot>
+    <view class="ui-tabs-ink-bar-wrapper" wx:if="{{ inkBar }}" style="{{ inkBarWrapperStyle }}">
+      <view class="ui-tabs-ink-bar" style="{{ selfInkBarStyle }}"></view>
+    </view>
+  </scroll-view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+import WxHelper from '../../libs/WxHelper'
+import MultiHelper from '../../libs/MultiHelper'
+
+const ChildPath = '../../ui-tab/dist/index'
+
+export default {
+  relations: WxHelper.getChildRelation(ChildPath),
+  behaviors: [ ],
+  properties: {
+    index: {
+      type: Number | String,
+      value: 0,
+      observer (index) {
+        this.handleIndexChange(index, true)
+      }
+    },
+    probe: {
+      type: Number | String,
+      value: 0
+    },
+    width: {
+      type: Number | String,
+      value: wx.WIN_WIDTH
+    },
+    autoWidth: {
+      type: Boolean,
+      value: true
+    },
+    inkBar: {
+      type: Boolean
+    },
+    inkBarStyle: {
+      type: String | Object
+    },
+    tabStyle: {
+      type: Object | String
+    },
+    activeTabStyle: {
+      type: Object | String
+    }
+   },
+  data: {
+    isInit: false,
+    scrollTop: 0,
+    scrollLeft: 0,
+    children: [],
+    rect: {},
+    outerChange: false,
+    walkDistance: 0,
+    walkCount: 0,
+    selfStyle: '',
+    selfProbe: 0,
+    selfIndex: 0,
+    selfInkBarStyle: '',
+    inkBarWrapperStyle: ''
+  },
+  ready () {
+    this.setData({
+      selfIndex: Number(this.data.index),
+      selfProbe: Number(this.data.probe),
+      height: Number(this.data.height)
+    })
+    this._init()
+  },
+  methods: {
+    _init () {
+      this._initRect()
+      this._initChildren()
+      this._initChildActive()
+      this._initSelfStyle()
+
+      if (this.data.inkBar) {
+        this._initSelfInkBarStyle()
+      }
+    },
+    _initChildren () {
+      let children = this.getRelationNodes(ChildPath)
+      this.setData({
+        children: children
+      })
+    },
+    _initChildActive () {
+      // 将index项设置为active
+      this.data.children[this.data.selfIndex].setData({
+        active: true
+      })
+    },
+    _initRect () {
+      WxHelper.getComponentRect(this, '.ui-tabs')
+        .then((rect) => {
+          this.setData({
+            rect: rect
+          })
+        })
+    },
+    _initSelfStyle () { 
+      this.setData({
+        selfStyle: StyleHelper.getPlainStyle({
+          width: this.data.width
+        })
+      })
+    },
+    _initSelfInkBarStyle () {
+      this.setData({
+        selfInkBarStyle: StyleHelper.getPlainStyle(this.data.inkBarStyle)
+      })
+    },
+    handleIndexChange (index, outerChange) {
+      MultiHelper.updateChildActive(this, index)
+
+      let selfProbe = this.data.selfProbe
+
+      if (selfProbe === 0 || (selfProbe === 1 && !outerChange)) {
+        this.triggerEvent('change', { index: index })
+      }
+
+      this.setData({
+        selfIndex: index
+      })
+
+      this._setTabStyle()
+
+      // 初始化完成时再执行_autoCenterTab，否则WxHelper.getComponentRect可能会报错
+      if (this.data.isInit) {
+        this._autoCenterTab()
+      }
+
+      if (this.data.inkBar) {
+        this._setInkBarWrapperStyle()
+      }
+    },
+    _setTabStyle () {
+      let { children, selfIndex, tabStyle, activeTabStyle, autoWidth } = this.data
+
+      let style = StyleHelper.getPlainStyle(tabStyle)
+      let activeStyle = StyleHelper.getMergedPlainStyles([tabStyle, activeTabStyle])
+
+      children.forEach((child, index) => {
+        let renderStyle = index === selfIndex ? activeStyle : style
+
+        if (autoWidth) {
+          renderStyle += `;width: ${child.data.width}px`
+        }
+
+        child.setData({
+          selfStyle: renderStyle
+        })
+      })
+    },
+    _autoCenterTab () {
+      let child = this.data.children[this.data.selfIndex]
+      WxHelper.getScrollViewRect(this, '.ui-tabs')
+        .then((scrollRect) => {
+          WxHelper.getComponentRect(child, '.ui-tab')
+            .then((rect) => {
+              let diff = rect.left - (this.data.rect.width - child.data.width) / 2
+              this.setData({
+                scrollLeft: diff + scrollRect.scrollLeft
+              })
+          })
+        })
+    },
+    _setInkBarWrapperStyle () {
+      let { children, rect } = this.data
+
+      let left = 0
+      let width = 0
+
+      for (let i = 0; i < children.length; i++) {
+        if (children[i].data.active) {
+          width = children[i].data.width
+          break
+        } else {
+          left += children[i].data.width
+        }
+      }
+
+      this.setData({
+        inkBarWrapperStyle: StyleHelper.getPlainStyle({
+          top: rect.height - 2,
+          left: left,
+          width: width
+        })
+      })
+    },
+    _increaseWalkDistance (rect) {
+      this.data.walkDistance += rect.width
+      this.data.walkCount++
+
+      // 最后一个tab初始化完成时
+      if (this.data.walkCount === this.data.children.length) {
+
+        let { walkDistance, walkCount, rect, tabStyle, activeTabStyle, children, selfIndex } = this.data
+
+        let resetTabHandle = null
+
+        let fixedStyle = {}
+
+        let width = null
+
+        // 当walkDistance < 容器宽度时，tab项的样式需要重设
+        if (walkDistance < rect.width && this.data.autoWidth) {
+          width = rect.width / walkCount
+          fixedStyle = { width: width }
+        }
+
+        let style = StyleHelper.getMergedPlainStyles([tabStyle, fixedStyle])
+        let activeStyle = StyleHelper.getMergedPlainStyles([tabStyle, activeTabStyle, fixedStyle])
+
+        this.setData({
+          isInit: true
+        })
+
+        this._autoCenterTab()
+
+        resetTabHandle = () => {
+          children.forEach((child, index) => {
+            child.setData({
+              selfStyle: index === selfIndex ? activeStyle : style
+            })
+
+            if (width) {
+              child.setData({
+                width: width
+              })
+            }
+          })
+        }
+  
+        setTimeout(() => {
+          if (resetTabHandle) {
+            resetTabHandle()
+          }
+
+          if (this.data.inkBar) {
+            this._setInkBarWrapperStyle()
+          }
+        })
+      }
+    }
+  }
+}
+</script>
+
+<style lang="less">
+ui-tabs {
+  display: inline-block;
+  width: 100%;
+}
+.ui-tabs {
+  position: relative;
+  &.ui-tabs-x {
+    width: 100%; 
+    white-space: nowrap;
+  }
+}
+
+.ui-tabs-x {
+  .ui-tabs-ink-bar-wrapper {
+    position: absolute;
+    left: 0;
+    height: 2px;
+    transform-origin: 50% 50%;
+    transition: width 250ms ease-out, left 250ms ease-out;
+  }
+
+  .ui-tabs-ink-bar {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    border-bottom: 2px solid @theme-color;
+  }
+}
+
+</style>

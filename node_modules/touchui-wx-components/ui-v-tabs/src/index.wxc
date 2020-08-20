@@ -1,0 +1,169 @@
+<template>
+  <scroll-view scroll-with-animation class="ui-v-tabs" style="{{ selfStyle }}" scroll-y="{{ true }}" scroll-top="{{ scrollTop }}">
+    <slot></slot>
+  </scroll-view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+import WxHelper from '../../libs/WxHelper'
+import MultiHelper from '../../libs/MultiHelper'
+
+const ChildPath = '../../ui-v-tab/dist/index'
+
+export default {
+  relations: WxHelper.getChildRelation(ChildPath),
+  behaviors: [ ],
+  properties: {
+    index: {
+      type: Number | String,
+      value: 0,
+      observer (index) {
+        this.handleIndexChange(index, true)
+      }
+    },
+    probe: {
+      type: [Number, String],
+      default: 0
+    },
+    width: {
+      type: Number | String
+    },
+    height: {
+      type: Number | String
+    },
+    tabStyle: {
+      type: Object | String
+    },
+    activeTabStyle: {
+      type: Object | String
+    }
+   },
+  data: {
+    isInit: false,
+    scrollTop: 0,
+    scrollLeft: 0,
+    children: [],
+    rect: {},
+    selfProbe: 0,
+    selfIndex: 0,
+    walkDistance: 0,
+    walkCount: 0
+  },
+  ready () {
+    this.setData({
+      selfIndex: Number(this.data.index),
+      selfProbe: Number(this.data.probe),
+      height: Number(this.data.height)
+    })
+    this._init()
+  },
+  methods: {
+    _init () {
+      this._initRect()
+      this._initChildren()
+      this._initChildActive()
+      this._initSelfStyle()
+      this._setTabStyle()
+    },
+    _initChildren () {
+      let children = this.getRelationNodes(ChildPath)
+      this.setData({
+        children: children
+      })
+    },
+    _initChildActive () {
+      // 将index项设置为active
+      this.data.children[this.data.selfIndex].setData({
+        active: true
+      })
+    },
+    _initRect () {
+      WxHelper.getComponentRect(this, '.ui-v-tabs')
+        .then((rect) => {
+          this.setData({
+            rect: rect
+          })
+        })
+    },
+    _initSelfStyle () {
+      this.setData({
+        selfStyle: StyleHelper.getPlainStyle({
+          width: this.data.width,
+          height: this.data.height
+        })
+      })
+    },
+    handleIndexChange (index, outerChange) {
+      MultiHelper.updateChildActive(this, index)
+
+      let selfProbe = this.data.selfProbe
+
+      if (selfProbe === 0 || (selfProbe === 1 && !outerChange)) {
+        this.triggerEvent('change', { index: index })
+      }
+
+      this.setData({
+        selfIndex: index
+      })
+      
+      this._setTabStyle()
+
+      if (this.data.isInit) {
+        this._autoMiddleTab()
+      }
+    },
+    _setTabStyle () {
+      let { children, selfIndex, tabStyle, activeTabStyle } = this.data
+
+      let style = StyleHelper.getPlainStyle(tabStyle)
+      let activeStyle = StyleHelper.getMergedPlainStyles([tabStyle, activeTabStyle])
+
+      children.forEach((node, index) => {
+        node.setData({
+          selfStyle: index === selfIndex ? activeStyle : style
+        })
+      })
+    },
+    _autoMiddleTab () {
+      let child = this.data.children[this.data.selfIndex]
+      WxHelper.getScrollViewRect(this, '.ui-v-tabs')
+        .then((scrollRect) => {
+          WxHelper.getComponentRect(child, '.ui-v-tab')
+            .then((rect) => {
+              let relativeTop = rect.top - this.data.rect.top
+              let diff = relativeTop - (this.data.height - child.data.height) / 2
+
+              this.setData({
+                scrollTop: diff + scrollRect.scrollTop
+              })
+          })
+        })
+    },
+    _increaseWalkDistance (rect) {
+      this.data.walkDistance += rect.height
+      this.data.walkCount++
+
+      if (this.data.walkCount === this.data.children.length) {
+        this.setData({
+          isInit: true
+        })
+        this._autoMiddleTab()
+      }
+    }
+  }
+}
+</script>
+
+<style lang="less">
+@import '../../styles/mixins/util.less';
+
+ui-v-tabs {
+  display: inline-block;
+}
+.ui-v-tabs {
+  position: relative;
+  height: 100%;
+  .mix-1px(0, 1, 0, 0, #ccc);
+}
+</style>

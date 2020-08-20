@@ -1,0 +1,77 @@
+<template>
+  <view class="ui-sticky" style="{{ selfCustomStyle }}" bindtap="handleTap">
+    <slot></slot>
+    <view hidden="{{ !fixed }}" class="ui-sticky-faker" style="{{ fakerStyle }}">
+      <slot name="sticky"></slot>
+    </view>
+  </view>
+</template>
+
+<script>
+import StyleHelper from '../../libs/StyleHelper'
+
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: {
+    scrollTop: {
+      type: Number,
+      observer (val) {
+        this.setFixed()
+      }
+    },
+    customStyle: {
+      type: Object | String
+    },
+    top: {
+      type: Number | String,
+      value: 0
+    }
+  },
+  options: {
+    multipleSlots: true
+  },
+  data: { 
+    fixed: false,
+    fakerStyle: '',
+    selfTop: 0
+  },
+  ready () {
+    // let viewport = wx.createSelectorQuery().selectViewport()
+    // console.log(viewport._selectorQuery._defaultComponent)
+    this.setData({
+      selfCustomStyle: StyleHelper.getPlainStyle(this.data.customStyle),
+      fakerStyle: StyleHelper.getMergedPlainStyles([this.data.customStyle, { top: this.data.top }]),
+      selfTop: Number(this.data.top)
+    })
+  },
+  methods: { 
+    setFixed () {
+      let query = wx.createSelectorQuery().in(this)
+      query.select('.ui-sticky').boundingClientRect((res) => {
+        this.setData({
+          fixed: res.top - this.data.selfTop < 0
+        })
+      }).exec()
+    }
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-sticky {
+  z-index: 480;
+}
+
+.ui-sticky-faker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 480;
+}
+</style>

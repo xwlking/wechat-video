@@ -1,0 +1,24 @@
+<template>
+  <view class="ui-popover">
+    <view>UiPopover Component</view>
+  </view>
+</template>
+
+<script>
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [ ],
+  properties: { },
+  data: { },
+  methods: { }
+}
+
+
+</script>
+
+<style>
+.ui-popover {
+}
+</style>

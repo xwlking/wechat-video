@@ -1,0 +1,53 @@
+.mix-button-size (@padding-vertical, @padding-horizontal, @font-size, @border-radius) {
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size;
+  border-radius: @border-radius;
+}
+
+.mix-button-variant (@color, @background-color, @border-color, @no-hover-class) {
+  color: @color;
+  background-color: @background-color;
+  border-color: @border-color;
+  -webkit-tap-highlight-color: fade(@background-color, 10);
+
+  & when (@no-hover-class) {
+    &:hover,
+    &:focus {
+      background: fadein(@background-color, @button-hover-tint-percent);
+      border-color: fadein(@border-color, @button-hover-tint-percent);
+      color: @color;
+    }
+
+    &:active {
+      background: darken(@background-color, 8%);
+      border-color: darken(@border-color, 8%);
+      color: @color;
+      outline: none;
+    }
+  }
+
+  &.is-active {
+    background: fadeout(@background-color, @button-active-shade-percent);
+    border-color: fadeout(@border-color, @button-active-shade-percent);
+    color: @color;
+  }
+
+  &.is-plain {
+    background: transparent;
+    border-color: @border-color;
+    color: @background-color;
+    -webkit-tap-highlight-color: fade(@background-color, 30);
+
+    &:hover,
+    &:focus {
+      border-color: @border-color;
+      color: @background-color;
+    }
+
+    &:active {
+      border-color: fadeout(@border-color, @button-active-shade-percent);
+      color: fadeout(@background-color, @button-active-shade-percent);
+      outline: none;
+    }
+  }
+}

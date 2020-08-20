@@ -1,0 +1,299 @@
+<template>
+  <view class="ui-w-calendar">
+      <view class="calendar-title">
+          <view wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" class="calendar-weekday">
+            {{item}}
+          </view>
+        </view>
+    <swiper class="calendar-wrap"           
+      current="{{weekPage}}"
+      bindchange="changeHandler"
+    >
+        <swiper-item class="calendar-month-body"
+          wx:for="{{monthsArray}}"
+          wx:for-index="monthIndex"
+          wx:key="monthIndex"
+          wx:for-item="monthItem"
+        >
+          <view class="calendar-day-wrap"
+            bindtap="touchStartHandler"
+            wx:for="{{monthItem.data}}"
+            wx:for-index="dayIndex"
+            wx:key="dayIndex"
+            data-month-index="{{monthIndex}}"
+            data-day-index="{{dayIndex}}"
+            data-item="{{dayItem}}"
+            wx:for-item="dayItem"
+          >
+            <view 
+            class="calendar-day-cell {{dayItem.isHoliday ? 'is-holiday' : ''}} {{dayItem.isClicked ? 'is-selected' : ''}}  "    
+            style="background-color:{{dayItem.isClicked ? themeColor : ''}} "
+            >
+              {{dayItem.day}}
+            </view>
+          </view>
+        </swiper-item>
+    </swiper>
+  </view>
+</template>
+
+<script>
+import props from './props.js'
+import Dater from '../../libs/date.js'
+import OTS from '../../libs/objectToStyle.js'
+var moment = require('moment')
+
+// console.log(moment('2018-3-11').weekday())
+export default {
+  config: {
+    usingComponents: { }
+  },
+  behaviors: [props],
+  data: {
+    weekPage: 0,
+    monthsArray: [],
+    oldItem: undefined,
+    scrollTop: 0,
+    oldRangeLeftItem: undefined,
+    oldRangeRightItem: undefined,
+    heightCount: 50,
+    pageCount: 0
+  },
+  ready () {
+    this.data.monthsArray.splice(0, this.data.monthsArray.length)
+    let startMonthAnchor
+    let endMonthAnchor
+    if (isNaN(Number(this.data.dateRange[0]))) { // 字符串
+      startMonthAnchor = this.data.dateRange[0] + '/01'
+      endMonthAnchor = this.data.dateRange[1] + '/01'
+    } else {
+      startMonthAnchor = moment().subtract(this.data.dateRange[0], 'months').subtract(1, 'weeks').format('YYYY/MM/DD')
+      endMonthAnchor = moment().add(this.data.dateRange[1] + 1, 'months').format('YYYY/MM/DD')
+    }
+    for (let i = 0;; i++) {
+      // console.log(startMonthAnchor)
+      let year = moment(startMonthAnchor).year()
+      let month = moment(startMonthAnchor).month() + 1
+      let day = moment(startMonthAnchor).date()
+      let startMonthDater = new Dater(year, month, day).weekDays // Dater使用的是正常月
+      // console.log(startMonthDater)
+      let monthArray = this.getWeekArray(startMonthDater, i)
+      monthArray.monthIndex = i
+      this.data.monthsArray.push(monthArray)
+      if (moment(startMonthAnchor).isSame(endMonthAnchor, 'month')) { // 相同
+        break
+      }
+      startMonthAnchor = moment(startMonthAnchor).add(1, 'weeks').format('YYYY/MM/DD')
+      // console.log(startMonthAnchor.format('YYYY-MM-DD'))
+    }
+    // console.log(weekDays)
+    console.log(this.momentTransToItem(moment(this.data.value)))
+    if (this.data.value) {
+      let wIndex = this.momentTransToItem(moment(this.data.value)).weekIndex
+      let iIndex = this.momentTransToItem(moment(this.data.value)).itemIndex
+      this.data.monthsArray[wIndex].data[iIndex].isClicked = true
+      this.data.oldItem = this.data.monthsArray[wIndex].data[iIndex]
+
+
+      this.setData({
+        weekPage: wIndex
+      })
+    }
+    // }, 3000);
+    this.setData({
+      monthsArray: this.data.monthsArray,
+      monthTitleStyle: OTS(this.data.monthTitleStyle),
+      calendarWrapStyle: OTS(this.calendarWrapStyleObj())
+    })
+    // let startMoment
+    // if (this.data.startShow === 'today') {
+    //   startMoment = moment()
+    // } else {
+    //   startMoment = moment(this.data.startShow)
+    // }
+
+      // this.selectRange(mIndex, dIndex)
+    // }
+    // for (let i = 0; i < this.data.monthsArray.length; i++) {
+    //   if (this.itemTransToMoment(this.data.monthsArray[i]).isSame(startMoment, 'month')) {
+    //     this.setData({
+    //       scrollTop: this.data.monthsArray[i].positionY
+    //     })
+    //   }
+    // }
+
+  },
+  methods: {
+    changeHandler (e) {
+      e = e.detail.current
+      this.triggerEvent('weekchange', `${this.data.monthsArray[e].data[0].year}/${this.data.monthsArray[e].data[0].month >= 10 ? '' :'0'}${this.data.monthsArray[e].data[0].month}/${this.data.monthsArray[e].data[0].day >= 10 ? '' :'0'}${this.data.monthsArray[e].data[0].day}`)
+    },
+    calendarWrapStyleObj () {
+      let style = {}
+      style.height = this.data.height + 'px'
+      console.log(style)
+      return style
+    },
+    itemTransToMoment (item) {
+      if (item.day) {
+        return moment(`${item.year}/${item.month}/${item.day}`)
+      } else {
+        return moment(`${item.year}/${item.month}`)
+      }
+    },
+    momentTransToItem (moment) {
+      for (let i = 0; i < this.data.monthsArray.length; i++) {
+        for (let j = 0; j < this.data.monthsArray[i].data.length; j++) {
+          if (moment.isSame(this.itemTransToMoment(this.data.monthsArray[i].data[j]))) {
+            return this.data.monthsArray[i].data[j]
+          }
+        }        
+      }
+    },
+    inRangeSelect (rightItem, startI, endI, select) {
+      for (let i = startI; i <= endI ; i++) {
+        for (let j = 0; j < this.data.monthsArray[startI].data.length; j++) {
+          // console.log(this.data.monthsArray[i].data[j])
+          if (this.data.monthsArray[i].data[j].isThisMonth &&
+          this.itemTransToMoment(this.data.monthsArray[i].data[j]).isAfter(this.itemTransToMoment(this.data.oldRangeLeftItem), 'day') && 
+          this.itemTransToMoment(this.data.monthsArray[i].data[j]).isBefore(this.itemTransToMoment(rightItem), 'day')) {
+            if (select) {
+              this.data.monthsArray[i].data[j].isInRange = true
+            } else {
+              this.data.monthsArray[i].data[j].isInRange = false
+            }
+          }
+          if (this.itemTransToMoment(this.data.monthsArray[i].data[j]).isSame(this.itemTransToMoment(rightItem), 'day')) {
+            break
+          }
+        }
+      }
+    },
+    selectSingle (mIndex, dIndex, selectItem) {
+      if (this.data.oldItem) {
+        this.data.oldItem.isClicked = false
+      }
+      this.data.monthsArray[mIndex].data[dIndex].isClicked = true
+      this.data.oldItem = this.data.monthsArray[mIndex].data[dIndex]
+      this.triggerEvent('changed', selectItem.value)
+      // this.$emit('change', this.AnchorToDayString(this.timeAnchor))
+    },
+    touchStartHandler (e) {
+      // console.log(e)
+      let mIndex = e.currentTarget.dataset.monthIndex
+      let dIndex = e.currentTarget.dataset.dayIndex
+      let selectItem = this.data.monthsArray[mIndex].data[dIndex]
+      this.selectSingle(mIndex, dIndex, selectItem)
+      this.setData({
+        monthsArray: this.data.monthsArray
+      })
+      // this.data.monthsArray['monthIndex'].
+      // e.currentTarget.dataset.item.isThisMonth = false
+      // console.log(this.data.monthsArray)
+
+
+      // console.log(this.data.monthsArray)
+    },
+    getWeekArray (date, monthIndex) {
+      var weekArray = {}
+      weekArray.data = []
+      for (let i = 0; i < date.data.length; i++) {
+        let obj = {}
+        obj.itemIndex = i
+        obj.day = date.data[i].day - 1
+        obj.month = date.data[i].month
+        obj.year = date.data[i].year
+        obj.isClicked = false
+        obj.weekIndex = this.data.pageCount
+        obj.value = `${obj.year}/${obj.month < 10 ? '0' : ''}${obj.month}/${obj.day < 10 ? '0' : ''}${obj.day}`
+        // console.log(moment(obj.value).weekday())
+        if ([0, 6].indexOf((moment(obj.value).weekday())) !== -1) {
+          obj.isHoliday = true
+        }
+        weekArray.data.push(obj)
+      }
+      weekArray.pageIndex = this.data.pageCount
+      this.data.pageCount++
+      return weekArray
+    },
+  }
+}
+
+
+</script>
+
+<style lang="less">
+.ui-w-calendar {
+  background-color: white;
+  .calendar-title {
+    height:50px;
+
+    .calendar-weekday {
+      height:50px;
+      width:14.2857%;
+      float: left;
+      line-height: 50px;
+      text-align: center;
+    }
+  }
+  .calendar-wrap {
+    height: 50px;
+  }
+    .calendar-month-body{
+      .calendar-month-title{
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+      }
+      .calendar-day-wrap {
+        height:50px;
+        width:14.2857%;
+        float: left;
+        text-align: center;
+        horizontal-align: middle;
+        line-height: 50px;
+        .calendar-day-cell {
+          width: 32px;
+          height: 32px;
+          line-height: 32px;
+          margin: 9px auto;
+          border-radius: 16px;
+        }
+
+        .is-this-month {
+          color: black
+        }
+        .is-holiday {
+          background-color: white;
+          color: red
+        }
+        .is-today {
+          background-color: #808080;
+          color: white;       
+        }
+        .is-selected {
+          background-color: @theme-color;
+          color: white;
+        }
+        .is-selected-left {
+          background-color: @theme-color;
+          color: white;
+        }
+        .is-selected-right {
+          background-color: red;
+          color: white;
+        }
+        .is-selected-in-range {
+          background-color: pink;
+          color: white;
+        }
+        .is-past-days {
+          color: gray;
+        }
+        .is-fore-days {
+          color: gray;
+        }
+      }
+    }
+}
+</style>

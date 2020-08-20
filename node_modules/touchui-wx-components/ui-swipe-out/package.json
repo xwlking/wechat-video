@@ -1,0 +1,16 @@
+{
+  "name": "ui-swipe-out",
+  "version": "1.0.0",
+  "description": "滑动菜单容器 - 小程序组件",
+  "main": "dist/index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meili/minui/tree/master/packages/ui-swipe-out"
+  },
+  "author": "",
+  "license": "MIT",
+  "minConfig": {
+    "component": true
+  }
+}

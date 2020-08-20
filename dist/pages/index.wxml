@@ -1,0 +1,94 @@
+<view>
+  <view wx:if="{{videoCategoryList}}">
+    <navbar title="流光小视频" backIcon="{{false}}" bgColor="#25335A" borderBottom="{{false}}" titleColor="white" _pid="{{_pid}}"></navbar>
+    <view style="background-color:#25335A;height:40px;">
+      <ui-tabs ink-bar="true" ink-bar-style="{{inkBarStyle}}" tab-style="{{tabStyle}}" active-tab-style="{{activeTabStyle}}" index="{{scrollViewIndex}}" bindchange="handleTabsChange" _pid="{{_pid}}">
+        <ui-tab wx:key="id" wx:for="{{videoCategoryList}}" wx:for-index="cIndex" wx:for-item="videoCategory" _pid="{{_pid}}">
+          <view>{{videoCategory.name}}</view>
+        </ui-tab>
+      </ui-tabs>
+    </view>
+    <!-- 滑块视图容器 -->
+    <view>
+      <swiper style="height:{{contentHeight}}" current="{{scrollViewIndex}}" bindchange="handleTabsContentChange">
+        <swiper-item wx:key="id" wx:for="{{videoCategoryList}}" wx:for-index="vcIndex" wx:for-item="vcItem">
+          <scroll-view style="height:100%" refresher-triggered="{{scrollViewDataArr[vcIndex].triggered}}" bindrefresherrefresh="bindrefresherrefresh" bindscrolltolower="bindscrolltolower" scroll-y refresher-enabled="{{true}}">
+            <view wx:if="{{scrollViewDataArr[vcIndex].videoDataList.length>0}}">
+              <view wx:for-index="vIndex" wx:key="id" wx:for="{{scrollViewDataArr[vcIndex].videoDataList}}" wx:for-item="videoData">
+                <view style="height:423rpx;" class="ui-row">
+                  <view wx:if="{{scrollViewDataArr[vcIndex].playVideoId!=videoData.id}}" bindtap="hintNetwork" data-playvideoid="{{videoData.id}}" data-vid="{{videoData.vid}}" data-index="{{vIndex}}" class="ui-col ui-col-align-center align-center valign-middle" style="">
+                    <view class="ui-col-content align-center valign-middle">
+                      <image mode="aspectFill" lazy-load="{{true}}" class="videoImage" src="{{videoData.coverImg}}" />
+                      <text class="vpi_y"></text>
+                      <image class="vpi" src="../static/images/play.png" />
+                      <text class="filmTop"></text>
+                      <text class="filmBottom"></text>
+                      <text class="videoText text-content-breif">{{videoData.title}}</text>
+                      <text class="viewCount">{{videoData.viewCount}}次播放</text>
+                      <text class="duration">{{videoData.duration}}</text>
+                    </view>
+                  </view>
+                  <view wx:else="" class="ui-col" style="">
+                    <view class="ui-col-content">
+                      <txv-video wx:if="{{useTxVideo}}" height="100%" width="100%;" poster="{{videoData.coverImg}}" vid="{{scrollViewDataArr[vcIndex].playVideoSrc}}" playerid="txv1" controls="{{true}}" autoplay="{{true}}" enablePlayGesture="{{true}}" _pid="{{_pid}}"></txv-video>
+                      <video wx:else="" style="height:100%;width:100%;" poster="{{videoData.coverImg}}" id="myVideo" src="{{scrollViewDataArr[vcIndex].playVideoSrc}}" controls="{{true}}" autoplay="{{true}}" enable-play-gesture="{{true}}"></video>
+                    </view>
+                  </view>
+                </view>
+                <view style="padding: 16rpx 0;" class="ui-row">
+                  <view class="ui-col ui-col-align-left align-left valign-middle" style="">
+                    <view class="ui-col-content align-left valign-middle">
+                      <!-- <image class="xh" src="../static/images/xh1.png"/> 
+                      <text class="viewCount">{{videoData.viewCount}}次播放</text> -->
+                    </view>
+                  </view>
+                  <view class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 45px;">
+                    <view class="ui-col-content align-center valign-middle">
+                      <button class="shareBut" open-type="share" data-videodata="{{videoData}}">
+                        <image class="share" src="../static/images/share1.png" />
+                      </button>
+                    </view>
+                  </view>
+                  <!-- <ui-col data-title="{{videoData.title}}" data-coverimg="{{videoData.coverImg}}" vertical-align="middle" align="center" width="45">
+                      <image class="share" src="../static/images/share2.png"/>
+                    </ui-col> -->
+                  <view bindtap="goVideoDetailPage" data-videodata="{{videoData}}" data-index="{{index}}" class="ui-col ui-col-align-center align-center valign-middle" style="flex:0 0 45px;">
+                    <view class="ui-col-content align-center valign-middle">
+                      <image class="share" src="../static/images/more.png" />
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view wx:else="" style="height:{{contentHeight}};" class="ui-row">
+              <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+                <view class="ui-col-content align-center valign-middle">
+                  <image class="loading0" src="../static/images/loading0.gif" />
+                </view>
+              </view>
+            </view>
+            <view wx:if="{{scrollViewDataArr[vcIndex].buttomTextFlag==1}}" style="margin:20rpx 0;" class="ui-row">
+              <view class="ui-col ui-col-5 ui-col-align-right align-right valign-middle" style="flex: 0 0 41.66666666666667%;">
+                <view class="ui-col-content align-right valign-middle">
+                  <image style="width:40rpx;height:40rpx;" src="../static/images/loading1.gif" />
+                </view>
+              </view>
+              <view class="ui-col ui-col-7 ui-col-align-left align-left valign-middle" style="flex: 0 0 58.333333333333336%;padding-left: 8px;">
+                <view class="ui-col-content align-left valign-middle">正在加载...</view>
+              </view>
+            </view>
+            <ui-divider wx:elif="{{scrollViewDataArr[vcIndex].buttomTextFlag==2}}" style="margin:20rpx 0;" _pid="{{_pid}}">人家也是有底线的</ui-divider>
+          </scroll-view>
+        </swiper-item>
+      </swiper>
+    </view>
+    <view wx:if="{{superUserFlag==1}}" class="superMenuFloatBt" bindtap="goVideoPage">发布</view>
+  </view>
+  <view wx:else="" style="height:100vh;" class="ui-row">
+    <view class="ui-col ui-col-align-center align-center valign-middle" style="">
+      <view class="ui-col-content align-center valign-middle">
+        <image class="loading0" src="../static/images/loading0.gif" />
+      </view>
+    </view>
+  </view>
+</view>

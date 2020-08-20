@@ -1,0 +1,185 @@
+<template>
+  <view class="ui-accordion">
+    <view
+    class="header"
+    bindtap="touchStartHandler"  
+    >
+      <view wx:if="{{showArrow}}" class="arrow" style="{{buttonImageStyle}}"> 
+        <image class="arrow-image" style="transform: {{buttonImageObj.transform}}" src="{{triangleImg}}"></image>
+      </view>
+      <view class="accordion-header">
+        <slot name="header"></slot>
+      </view>
+    </view>
+    <view class="content" style="height: {{contentObj.height}}px;transition: {{contentObj.transition}}" src="{{triangleImg}}">
+        <slot name="content"></slot>
+    </view>
+  </view>
+</template>
+
+<script>
+import OTS from '../../libs/objectToStyle.js'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  properties: {
+    headerHeight: {
+      type: [String, Number],
+      value: 50
+    },
+    state: {
+      type: String,
+      value: 'hide',
+      observer (val) {
+        this.data.selfState = val
+        if (this.data.selfState === 'show') {
+          this.data.selfState = 'hide'
+        } else {
+          this.data.selfState = 'show'
+        }
+        this.setData({
+          buttonImageObj: this.buttonImageObjFunc(),
+          contentObj: this.contentObjFunc()
+        })
+      }
+    },
+    animate: {
+      type: [String, Boolean],
+      value: true
+    },
+    animateDuration: {
+      type: [String, Number],
+      value: 0.3
+    },
+    showArrow: {
+      type: [String, Boolean],
+      value: true
+    }
+  },
+
+  options: {
+    multipleSlots: true // 在组件定义时的选项中启用多slot支持
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    selfState: 'hide',
+    triangleImg: './images/triangle.png',
+    selfAnimateDuration: 0.3,
+    buttonImageObj: {},
+    contentObj: {}
+  },
+
+  ready () {
+    this.data.selfAnimateDuration = this.properties.animateDuration
+    this.data.selfState = this.properties.state
+    this.data.slotHeight = this.data.headerHeight
+    this.setData({
+      })
+
+    wx.createSelectorQuery().in(this).select('.content').boundingClientRect((res) => {
+      this.data.contentHeight = res.height
+    }).exec()
+
+
+
+
+
+    this.setData({
+        buttonImageObj: this.buttonImageObjFunc(),
+        contentObj: this.contentObjFunc(),
+        buttonImageStyle: OTS(this.buttonImageStyleObj())
+    })
+  },
+  /**
+   * 组件的方法列表
+   */
+  methods: {
+    touchStartHandler() {
+      if (this.data.selfState === 'show') {
+        this.data.selfState = 'hide'
+      } else {
+        this.data.selfState = 'show'
+      }
+      this.setData({
+        buttonImageObj: this.buttonImageObjFunc(),
+        contentObj: this.contentObjFunc()
+      })
+    },
+    touchMoveHandler() {
+    },
+    touchEndHandler() {
+    },
+    buttonImageStyleObj () {
+      let style = {}
+      style.top = this.data.slotHeight / 2 - 4 + 'px'
+      return style
+    },
+    buttonImageObjFunc() {
+      let style = {}
+      style.top = 18 + 'px'
+      if (this.data.animate) {
+        style.transition = `transform ${this.data.selfAnimateDuration}s`
+      }
+      if (this.data.selfState === 'hide') {
+        style.transform = 'rotate(0deg)'
+      } else {
+        style.transform = 'rotate(180deg)'
+      }
+      return style
+    },
+    contentObjFunc() {
+      let style = {}
+      if (this.data.animate) {
+        style.transition = `height ${this.data.selfAnimateDuration}s`
+      }
+      if (this.data.selfState === 'hide') {
+        style.height = 0
+      } else {
+        style.height = this.data.contentHeight
+      }
+      return style
+    }
+  }
+}
+
+
+</script>
+
+<style>
+.ui-accordion {
+  display: relative;
+  width: 100%;
+}
+
+.content {
+  width: 100%;
+  overflow: hidden;
+  /* transition: height .3s; */
+}
+
+.header {
+  width: 100%;
+  min-height: 30px;
+  background-size: 16px;
+  text-align: center;
+  line-height: 30px;
+  position: relative;
+}
+
+.arrow {
+  position: absolute;
+  z-index: 9999;
+  right: 8px;
+}
+
+.arrow-image {
+  transition: transform .3s;
+  width: 14px;
+  height: 8px;
+}
+
+</style>

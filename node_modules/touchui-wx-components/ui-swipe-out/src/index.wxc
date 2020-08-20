@@ -1,0 +1,226 @@
+<template>
+  <view class="ui-swipe-out" style="height:{{height}}px">
+    <view class="content"
+      style="transform: translate3d({{offsetX}}px, 0px, 0px);transition:{{tScript}}"
+      bindtouchstart="touchStartHandler" 
+      bindtouchmove="touchMoveHandler" 
+      bindtouchend="touchEndHandler">
+      <slot name="content"></slot>
+    </view>
+    <view style="{{operateStyle}}" class="operate">
+      <slot name="operate"></slot>
+    </view>
+  </view>
+</template>
+
+<script>
+const onSTATE = Symbol('on')
+const offSTATE = Symbol('off')
+import OTS from '../../libs/objectToStyle.js'
+export default {
+  config: {
+    usingComponents: { }
+  },
+  options: {
+    multipleSlots: true // 在组件定义时的选项中启用多slot支持
+  },
+  ready: function () {
+    this.data.selfValue = this.getSymbolFromState(this.properties.value)
+    this.updateOffset(this.data.selfValue)
+    this.setData({
+      operateStyle: OTS(this.operateStyleObj())
+    })
+  },
+  properties: {
+    operateWidth: {
+      type: Number,
+      value: 160
+    },
+    value: {
+      type: String,
+      value: 'off',
+      observer (val) {
+        console.log(val)
+        this.data.selfValue = this.getSymbolFromState(val)
+        this.updateOffset(this.data.selfValue)
+      }
+    },
+    canSwipe: {
+      type: Boolean,
+      value: true
+    },
+    height: {
+      type: Number,
+      value: 50,
+      observer (val) {
+        this.setData({
+          height: val
+        }) 
+      }
+    }
+  },
+
+  /**
+   * 组件的初始数据
+   */
+  data: {
+    state: null,
+    startX: 0,
+    startY: 0,
+    offsetX: 0,
+    tScript: 'transform .2s',
+    selfValue: offSTATE,
+    active: true,
+    radio: 0,
+    canChange: true
+  },
+
+  /**
+   * 组件的方法列表
+   */
+  
+  methods: {
+    operateStyleObj () {
+      let style = {}
+      style.width = this.data.operateWidth + 'px'
+      return style
+    },
+    on () {
+      this.data.selfValue = this.getSymbolFromState('on')
+      this.updateOffset(this.data.selfValue)
+    },
+    off () {
+      this.data.selfValue = this.getSymbolFromState('off')
+      this.updateOffset(this.data.selfValue)
+    },
+
+    touchStartHandler (e) {
+
+      // this.data.offsetX = e
+      if (!this.data.active) {
+        return
+      }
+      this.setData({
+        startX: e.touches[0].pageX - this.data.offsetX,
+        fingerStartX: e.touches[0].pageX,
+        fingerStartY: e.touches[0].pageY
+      })
+      this.setData({
+        tScript: ''
+      })
+    },
+    touchMoveHandler (e) {
+      if (!this.data.canChange) {
+        return
+      }
+      if (Math.abs(this.data.fingerStartY - e.touches[0].pageY) / Math.abs(this.data.fingerStartX - e.touches[0].pageX) > 1) {
+        console.log('????')
+        this.data.canChange = false
+      }
+      if (!this.data.active) {
+        return
+      }
+      console.log(123123)
+      let offsetX = e.touches[0].pageX - this.data.startX
+      if (offsetX < -this.data.operateWidth) {
+        this.setData({
+          offsetX: -this.data.operateWidth
+        })
+      } else if (offsetX > -20) {
+        this.setData({
+          offsetX: 0
+        })
+      } else {
+        this.setData({
+          offsetX: e.touches[0].pageX - this.data.startX
+        })
+      }
+    },
+    bounceAnimate () {
+      this.data.active = false
+      this.setData({
+        offsetX: 10
+      })
+      setTimeout(() => {
+        this.setData({
+          offsetX: -10
+        })
+      }, 200)
+      setTimeout(() => {
+        this.setData({
+          offsetX: 0
+        })
+        this.data.active = true
+      }, 400)
+    },
+    getStateFromSymbol (sbl) {
+      return sbl.toString().split('(')[1].split(')')[0]
+    },
+    getSymbolFromState(str) {
+      return str === 'on' ? onSTATE : offSTATE
+    },
+    updateOffset (sbl) {
+      this.setData({
+        offsetX: this.getStateFromSymbol(sbl) === 'on' ? -this.data.operateWidth : 0
+      })
+    },
+    touchEndHandler (e) {
+      if (!this.data.canChange) {
+        this.data.canChange = true
+        return
+      }
+      if (!this.data.active) {
+        return
+      }
+      this.setData({
+        tScript: 'transform .2s'
+      })
+      if (e.changedTouches[0].pageX - this.data.startX > 0) {
+        if (this.data.selfValue === onSTATE) {
+          this.data.selfValue = offSTATE
+        } else {
+          this.bounceAnimate()
+          return
+        }
+      } else if (Math.abs(e.changedTouches[0].pageX - this.data.startX) < 10) {
+        this.updateOffset(this.data.selfValue)
+      } else {
+        if (this.data.selfValue === onSTATE) {
+          this.data.selfValue = offSTATE
+        } else {
+          this.data.selfValue = onSTATE
+        }
+        this.updateOffset(this.data.selfValue)
+      }
+      this.triggerEvent('change', this.getStateFromSymbol(this.data.selfValue))
+    }
+  }
+}
+
+
+</script>
+
+<style>
+.ui-swipe-out {
+  position: relative; 
+  height: 50px;
+  width: 100%;
+}
+
+
+.ui-swipe-out .content{
+ position: absolute;
+ background: white;
+ width: 100%;
+ height: 50px;
+ z-index: 2;
+}
+
+
+.operate{
+ position: absolute;
+ right: 0;
+ height: 50px;
+ width: 100%;
+}
+</style>

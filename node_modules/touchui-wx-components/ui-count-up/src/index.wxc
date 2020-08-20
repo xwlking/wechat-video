@@ -1,0 +1,125 @@
+<template>
+  <view class="ui-count-up" style="color:{{color}};{{selfNumberStyle}}">{{showNum}}</view>
+</template>
+    
+<script>
+  // import { tween } from 'shifty'
+  import StyleHelper from '../../libs/StyleHelper.js'
+  import { RGBHelper }  from './rgblib/rgbHelper.js'
+  export default {
+    properties: {
+      from: {
+        type: [Number, String],
+      },
+      to: {
+        type: [Number, String],
+      },
+      duration: {
+        type: [Number, String],
+        value: 1000,
+      },
+      fromColor: {
+        type: String,
+        value: '#000000',
+      },
+      toColor: {
+        type: String,
+        value: '#000000',
+      },
+      numberStyle: {
+        type: [Object, String],
+        value: ''
+      },
+      fixed: {
+        type: [Number, String],
+        value: 0
+      },
+      digit: {
+        type: [Number, String],
+        value: 0
+      }
+    },
+    data: {
+      showNum: '',
+      num: 0,
+      time: 0,
+      color: '',
+      selfNumberStyle: '',
+      tick: 0,
+    },
+    created () {
+    },
+    detached () {
+      if (this.data.interval) {
+        clearInterval(this.data.interval)
+      }
+    },
+    attached () {
+      this.data.selfDigit = Number(this.data.digit)
+      
+      this.data.selfNumberStyle = StyleHelper.getPlainStyle(this.data.numberStyle)
+
+      this.data.selfFrom = Number(this.data.from)
+      this.data.selfTo = Number(this.data.to)
+      this.data.tick = this.data.duration / (this.data.selfTo - this.data.selfFrom)
+      if (this.data.tick < 20) {
+        this.data.multi = 20 / this.data.tick
+        this.data.tick = 20
+      } else {
+        this.data.multi = 1 + 0.01
+      }
+      this.data.tick = Math.floor(this.data.tick)
+      this.data.gradientArray = RGBHelper.gradient(
+        this.data.fromColor, 
+        this.data.toColor, 
+        Math.floor((this.data.selfTo - this.data.selfFrom) / this.data.multi)
+      )
+      this.data.num = Math.floor(this.data.selfFrom)
+      this.setData({
+        num: this.data.num,
+        selfNumberStyle: this.data.selfNumberStyle
+      })
+    },
+
+    ready () {
+      let i = 0
+      this.data.interval = setInterval(() => {
+        this.data.num = this.data.multi + this.data.num
+        if (this.data.num >= this.data.selfTo) {
+          clearInterval(this.data.interval)
+          this.data.num = this.data.selfTo
+          this.data.showNum = Number(this.data.num).toFixed(this.data.fixed)
+          this.zeroAlign()
+          this.setData({
+            showNum: this.data.showNum
+          })
+          this.setData({
+            num: this.data.num,
+            color: this.data.gradientArray[this.data.gradientArray.length - 1]
+          })
+          return
+        }
+        if (this.data.gradientArray[i]) {
+          this.setData({
+            color: this.data.gradientArray[i]
+          })
+        }
+        this.data.showNum = Number(this.data.num).toFixed(this.data.fixed)
+        this.zeroAlign()
+        this.setData({
+          showNum: this.data.showNum
+        })
+        i++
+      }, this.data.tick)
+    },
+    methods: {
+      zeroAlign() {
+      let digit = this.data.showNum.split('.')[0].length
+      if (this.data.selfDigit && this.data.selfDigit > digit) {
+        let zeroNumber = this.data.selfDigit - digit
+        this.data.showNum = Math.pow(10, zeroNumber).toString().split('1')[1] + this.data.showNum
+      }
+    },
+    }
+  }
+</script>

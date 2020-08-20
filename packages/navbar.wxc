@@ -1,0 +1,118 @@
+<template>
+  <view>
+    <ui-nav-bar slot="nav-bar" custom-style="{{ {backgroundColor:bgColor,borderBottom: borderBottom?'1rpx solid #e0e0e0':'none'} }}">
+      <ui-row height="46">
+        <ui-col span="3" bindtap="{{backIcon?'navigateBack':''}}" vertical-align="middle" align="left">
+          <ui-row wx:if="{{backIcon}}" class="backView">
+            <ui-col vertical-align="middle" align="center" style="border-right:1rpx solid #596078;">
+              <ui-icon type="arrow-left" class="backIcon" style="color:{{arrowColor}};"></ui-icon>
+            </ui-col>
+            <ui-col vertical-align="middle" align="center">
+              <ui-icon type="jd-home" class="backIcon" style="color:{{arrowColor}};"></ui-icon>
+            </ui-col>
+          </ui-row>
+        </ui-col>
+        <ui-col vertical-align="middle" align="center">
+          <text class="appTitle pg_t1" style="color:{{titleColor}};">{{title}}</text>
+        </ui-col>
+        <ui-col span="3">
+        </ui-col>
+      </ui-row>
+    </ui-nav-bar>
+    <view style="height:{{NAV_HEIGHT}}"></view>
+  </view>
+</template>
+<script>
+var app = getApp();
+var thisPage = null;
+export default {
+  config: {
+    usingComponents: {
+      "ui-nav-bar": "touchui-wx-components/ui-nav-bar"
+    }
+  },
+  properties: {
+    title: {
+      type: String,
+      value: "流光小视频"
+    },
+    backIcon: {
+      type: Boolean,
+      value: true
+    },
+    bgColor: {
+      type: String,
+      value: "white"
+    },
+    titleColor: {
+      type: String,
+      value: "black"
+    },
+    borderBottom: {
+      type: Boolean,
+      value: true
+    },
+    arrowColor: {
+      type: String,
+      value: "#333333"
+    }
+  },
+  data: {
+    NAV_HEIGHT: wx.STATUS_BAR_HEIGHT + wx.DEFAULT_HEADER_HEIGHT + "px",
+    navBarStyle: {
+      backgroundColor: "#fbf195"
+    }
+  },
+  methods: {
+    navigateBack() {
+      var pages = getCurrentPages();
+      if (pages.length == 1) {
+        wx.reLaunch({
+          url: "/pages/index"
+        });
+      } else wx.navigateBack();
+    }
+  }
+};
+</script>
+
+<style lang="less">
+@import "./static/styles/row.less";
+@import "./static/styles/col.less";
+@import "./static/styles/icon.less";
+.v {
+  position: fixed;
+  width: 100%;
+  z-index: 9999;
+  top: 0;
+}
+.appTitle {
+  font-size: 36rpx;
+  font-weight: 500;
+}
+.backIcon {
+  // padding: 0 0 0 32rpx;
+  font-weight: bold;
+}
+.backView {
+  width: 174rpx;
+  border: 1rpx solid #596078;
+  position: absolute;
+  border-radius: 40rpx;
+  left: 26rpx;
+  height: 60rpx;
+  top: 7px;
+  padding: 10rpx 0;
+  background-color: #222b4a;
+}
+.pg_t1 {
+  display: -webkit-box;
+  overflow: hidden;
+  word-break: break-all;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  text-align: center;
+  width: 80%;
+}
+</style>
