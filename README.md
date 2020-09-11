@@ -1,5 +1,5 @@
 # 简介
-本项目是视频类微信小程序，基于TouchWX开发（TouchWX请自行了解，简单易学易用！），对于做Java开发的我来说上手也很轻松！
+本项目是视频类微信小程序，基于TouchWX开发（TouchWX请自行了解，简单易学易用！），对于后台开发者也能轻松上手！
 
 
 # 说明
@@ -18,7 +18,7 @@
   - 详情页视频置顶固定播放
   - 网络检测，非WIFI环境提示
 
-# 体验（微信搜索“流光小视频”）
+# 体验
 [image](https://mmbiz.qpic.cn/mmbiz_jpg/V2rlAF0vvfZz4hTg8Q2tdJIVgYAG0RT8Wia7u32a0vpKyibnncAt1gDeAcvpavMCUUtQbO9ibkkwu8kY03ZM8Nw8A/0?wx_fmt=jpeg)
 # 首页
 [image](https://mmbiz.qpic.cn/mmbiz_png/V2rlAF0vvfZz4hTg8Q2tdJIVgYAG0RT8eXtKJhoU2Zf7r7gdIljDBNkRZaq6jhEp8jLhxZqiaicMfQ8kAu5wa7zw/0?wx_fmt=png)
