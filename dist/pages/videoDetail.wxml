@@ -24,12 +24,6 @@
                   </view>
                 </view>
 
-                <!-- <ui-row space-top="20">
-                <ui-col vertical-align="middle" align="left">
-                  <text class="pit">本文素材来源于网络，若有侵犯请告知！</text>
-                </ui-col>
-              </ui-row> -->
-
                 <view id="cAnchor" class="ui-row" style="margin-top: 30px;">
                   <view class="ui-col" style="">
                     <view class="ui-col-content">

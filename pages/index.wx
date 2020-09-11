@@ -86,6 +86,7 @@
 
 <script>
 import qqVideo from "../static/utils/qqVideo";
+import vData from "../static/data/data.js";
 let app = getApp();
 let thisPage = null;
 export default {
@@ -126,12 +127,7 @@ export default {
   },
   onLoad(e) {
     thisPage = this;
-    app.getCertificate().then(function() {
-      thisPage.queryVideoCategoryList();
-      thisPage.setData({
-        superUserFlag: wx.getStorageSync("superUserFlag")
-      });
-    });
+    thisPage.queryVideoCategoryList();
   },
   handleTabsChange(e) {
     let scrollViewDataArr = thisPage.data.scrollViewDataArr;
@@ -154,7 +150,6 @@ export default {
       scrollViewIndex: index,
       scrollViewDataArr: scrollViewDataArr
     });
-
     if (scrollViewDataArr[index].videoDataList.length == 0) {
       let page = scrollViewDataArr[index].page;
       let size = thisPage.data.size;
@@ -170,7 +165,7 @@ export default {
     let scrollViewDataArr = [];
     for (let i = 0, len = videoCategoryList.length; i < len; i++) {
       scrollViewDataArr.push({
-        page: 1,
+        page: 0,
         videoDataList: [],
         totalPage: 0,
         totalNum: 0,
@@ -187,115 +182,55 @@ export default {
    * 查询分类列表
    */
   queryVideoCategoryList() {
-    let jwt = wx.getStorageSync("jwt");
-    wx.request({
-      url: app.server + "/miniapp/lg/video/category",
-      method: "GET",
-      header: {
-        Authorization: jwt
-      },
-      data: {
-        page: 1,
-        size: 10
-      },
-      success: function(res) {
-        let result = res.data;
-        if (result.status) {
-          let videoCategoryList = res.data.resultObj;
-          thisPage.setData({
-            videoCategoryList: videoCategoryList
-          });
-          thisPage.initScrollViewParam(videoCategoryList);
-          thisPage.getVideoList(videoCategoryList[0].id, 1, 10);
-        } else {
-          let message = res.data.message;
-          wx.showToast({
-            title: message,
-            icon: "none"
-          });
-        }
-      },
-      fail: function(e) {
-        // app.requestSeverFailHint();
-      },
-      complete: function(e) {}
+    let videoCategoryList = vData.category;
+    thisPage.setData({
+      videoCategoryList: videoCategoryList
     });
+    thisPage.initScrollViewParam(videoCategoryList);
+    thisPage.getVideoList(videoCategoryList[0].id, 0, 10);
   },
   /**
    * 查询视频列表
    */
   getVideoList(videoCategoryId, page, size) {
-    thisPage.setData({
-      forbidLoadFlag: true
-    });
-    let jwt = wx.getStorageSync("jwt");
-    wx.request({
-      url: app.server + "/miniapp/lg/video",
-      method: "GET",
-      header: {
-        Authorization: jwt
-      },
-      data: {
-        videoCategoryId: videoCategoryId,
-        page: page,
-        size: size
-      },
-      success: function(res) {
-        let result = res.data;
-        if (result.status) {
-          let newDataList = res.data.resultObj.records;
-          let totalNum = res.data.resultObj.total;
-          // 计算总页数
-          const totalPage = parseInt(
-            (parseInt(totalNum) - 1) / parseInt(size) + 1
-          );
+    let totalNum = 60;
+    // 计算总页数
+    const totalPage = parseInt(
+      (parseInt(totalNum) - 1) / parseInt(size) + 1
+    );
 
-          let scrollViewIndex = thisPage.data.scrollViewIndex;
-          let scrollViewDataArr = thisPage.data.scrollViewDataArr;
+    let startIndex = 10*(page);
+    let endIndex = 10*(page)+10;
+    let videoList = vData.videoList;
+    let newDataList = videoList[videoCategoryId].slice(startIndex,endIndex);
+    let scrollViewIndex = thisPage.data.scrollViewIndex;
+    let scrollViewDataArr = thisPage.data.scrollViewDataArr;
 
-          if (page == 1) {
-            scrollViewDataArr[scrollViewIndex].videoDataList = newDataList;
-          } else {
-            const dataJoinWay = thisPage.data.dataJoinWay;
-            for (let newData of newDataList) {
-              if (dataJoinWay == "top") {
-                scrollViewDataArr[scrollViewIndex].videoDataList.unshift(
-                  newData
-                ); //头部累加
-              } else if (dataJoinWay == "bottom") {
-                scrollViewDataArr[scrollViewIndex].videoDataList.push(newData); //底部累加
-              }
-            }
-          }
-
-          scrollViewDataArr[scrollViewIndex].playVideoId = 0;
-          scrollViewDataArr[scrollViewIndex].triggered = false;
-          scrollViewDataArr[scrollViewIndex].totalPage = totalPage;
-          scrollViewDataArr[scrollViewIndex].totalNum = totalNum;
-          scrollViewDataArr[scrollViewIndex].buttomTextFlag =
-            page >= totalPage ? 2 : 1;
-
-          thisPage.setData({
-            scrollViewDataArr: scrollViewDataArr
-          });
-        } else {
-          const message = res.data.message;
-          wx.showToast({
-            title: message,
-            icon: "none"
-          });
+    if (page == 0) {
+      scrollViewDataArr[scrollViewIndex].videoDataList = newDataList;
+    } else {
+      const dataJoinWay = thisPage.data.dataJoinWay;
+      for (let newData of newDataList) {
+        if (dataJoinWay == "top") {
+          scrollViewDataArr[scrollViewIndex].videoDataList.unshift(newData); //头部累加
+        } else if (dataJoinWay == "bottom") {
+          scrollViewDataArr[scrollViewIndex].videoDataList.push(newData); //底部累加
         }
-      },
-      fail: function(e) {
-        // app.requestSeverFailHint();
-      },
-      complete: function(e) {
-        thisPage.setData({
-          forbidLoadFlag: false,
-          dataJoinWay: ""
-        });
       }
+    }
+
+    scrollViewDataArr[scrollViewIndex].playVideoId = 0;
+    scrollViewDataArr[scrollViewIndex].triggered = false;
+    scrollViewDataArr[scrollViewIndex].totalPage = totalPage;
+    scrollViewDataArr[scrollViewIndex].totalNum = totalNum;
+    scrollViewDataArr[scrollViewIndex].buttomTextFlag =
+      page >= totalPage-1 ? 2 : 1;
+
+    thisPage.setData({
+      scrollViewDataArr: scrollViewDataArr,
+      dataJoinWay: ""
     });
+    
   },
   /**
    * 页面上拉触底事件的处理函数
@@ -309,8 +244,7 @@ export default {
     let videoCategoryId =
       thisPage.data.scrollViewDataArr[scrollViewIndex].videoCategoryId;
 
-    if (thisPage.data.forbidLoadFlagTab) return; //禁止查询标识
-    if (page >= totalPage) return;
+    if (page >= totalPage-1) return;
 
     page += 1;
     scrollViewDataArr[scrollViewIndex].page = page;
@@ -332,11 +266,9 @@ export default {
     let videoCategoryId =
       thisPage.data.scrollViewDataArr[scrollViewIndex].videoCategoryId;
 
-    if (thisPage.data.forbidLoadFlagTab) return; //禁止查询标识
-
     scrollViewDataArr[scrollViewIndex].triggered = true;
 
-    if (page >= totalPage) page = 1;
+    if (page >= totalPage-1) page = 0;
     else page += 1;
 
     scrollViewDataArr[scrollViewIndex].page = page;
@@ -401,7 +333,6 @@ export default {
    */
   goVideoDetailPage(e) {
     let videodata = e.currentTarget.dataset.videodata;
-    // console.log(videodata);
     let index = e.currentTarget.dataset.index;
     let page = thisPage.data.page;
     let scrollViewIndex = thisPage.data.scrollViewIndex;

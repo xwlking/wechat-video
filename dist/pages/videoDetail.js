@@ -8,6 +8,10 @@ var _qqVideo = require("../static/utils/qqVideo.js");
 
 var _qqVideo2 = _interopRequireDefault(_qqVideo);
 
+var _data = require("../static/data/data.js");
+
+var _data2 = _interopRequireDefault(_data);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var app = getApp();
@@ -40,13 +44,9 @@ exports.default = Page({
     });
 
     if (getCurrentPages().length == 1) {
-      app.getCertificate().then(function () {
-        thisPage.videoViewStat(playVideoData.id);
-        thisPage.getVideoList(page, size);
-        thisPage.autoPlay();
-      });
+      thisPage.getVideoList(page, size);
+      thisPage.autoPlay();
     } else {
-      thisPage.videoViewStat(playVideoData.id);
       thisPage.getVideoList(page, size);
       thisPage.autoPlay();
     }
@@ -95,79 +95,46 @@ exports.default = Page({
    * 查询视频列表
    */
   getVideoList: function getVideoList(page, size) {
-    thisPage.setData({
-      forbidLoadFlag: true
-    });
-    var jwt = wx.getStorageSync("jwt");
-    wx.request({
-      url: app.server + "/miniapp/lg/video",
-      method: "GET",
-      header: {
-        Authorization: jwt
-      },
-      data: {
-        page: page,
-        size: size,
-        videoCategoryId: thisPage.data.videoCategoryId
-      },
-      success: function success(res) {
-        var result = res.data;
-        if (result.status) {
-          var newDataList = res.data.resultObj.records;
-          var totalNum = res.data.resultObj.total;
-          // 计算总页数
-          var totalPage = parseInt((parseInt(totalNum) - 1) / parseInt(size) + 1);
-          var videoDataList = thisPage.data.videoDataList;
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+    var totalNum = 60;
+    // 计算总页数
+    var totalPage = parseInt((parseInt(totalNum) - 1) / parseInt(size) + 1);
+    var startIndex = 10 * page;
+    var endIndex = 10 * page + 10;
+    var videoList = _data2.default.videoList;
+    var newDataList = videoList[thisPage.data.videoCategoryId].slice(startIndex, endIndex);
+    var videoDataList = thisPage.data.videoDataList;
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-          try {
-            for (var _iterator = newDataList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var newData = _step.value;
+    try {
+      for (var _iterator = newDataList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var newData = _step.value;
 
-              newData.videoCategoryId = thisPage.data.videoCategoryId;
-              videoDataList.push(newData); //底部累加
-            }
-            // console.log(videoDataList);
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
-            }
-          }
-
-          thisPage.setData({
-            videoDataList: videoDataList,
-            totalPage: totalPage,
-            totalNum: totalNum,
-            buttomTextFlag: page >= totalPage ? 2 : 1,
-            moreDataText: page == totalPage ? "人家也是有底线的" : "点击加载更多"
-          });
-        } else {
-          var message = res.data.message;
-          wx.showToast({
-            title: message,
-            icon: "none"
-          });
-        }
-      },
-      fail: function fail(e) {
-        // app.requestSeverFailHint();
-      },
-      complete: function complete(e) {
-        thisPage.setData({
-          forbidLoadFlag: false
-        });
+        newData.videoCategoryId = thisPage.data.videoCategoryId;
+        videoDataList.push(newData); //底部累加
       }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    thisPage.setData({
+      videoDataList: videoDataList,
+      totalPage: totalPage,
+      totalNum: totalNum,
+      buttomTextFlag: page >= totalPage - 1 ? 2 : 1,
+      moreDataText: page >= totalPage - 1 ? "人家也是有底线的" : "点击加载更多"
     });
   },
 
@@ -180,7 +147,7 @@ exports.default = Page({
     var totalPage = thisPage.data.totalPage;
 
     if (thisPage.data.forbidLoadFlag) return; //禁止查询标识
-    if (page >= totalPage) return;
+    if (page >= totalPage - 1) return;
 
     thisPage.setData({ moreDataText: "加载中..." });
 
@@ -189,42 +156,6 @@ exports.default = Page({
 
     thisPage.setData({
       page: page
-    });
-  },
-  /**
-   * 视频浏览统计
-   */
-  videoViewStat: function videoViewStat(videoId, index) {
-    wx.request({
-      header: {
-        Authorization: wx.getStorageSync("jwt")
-      },
-      method: "PUT",
-      url: app.server + "/miniapp/lg/video/count/" + videoId,
-      success: function success(res) {
-        var status = res.data.status;
-        var message = res.data.message;
-        if (status) {
-          if (index >= 0) {
-            //+浏览数
-            var videoDataList = thisPage.data.videoDataList;
-            videoDataList[index].viewCount = res.data.resultObj;
-            thisPage.setData({
-              videoDataList: videoDataList
-            });
-          } else {
-            var playVideoData = thisPage.data.playVideoData;
-            playVideoData.viewCount = res.data.resultObj;
-            thisPage.setData({ playVideoData: playVideoData });
-          }
-        } else {
-          app.showToastNoneIcon(message);
-        }
-      },
-      fail: function fail(e) {
-        console.log(e);
-      },
-      complete: function complete() {}
     });
   },
   hintNetwork: function hintNetwork(videoParam) {
@@ -257,8 +188,6 @@ exports.default = Page({
     var vid = playVideoData.vid;
 
     if (playVideoData.id == thisPage.data.playVideoData.id) return;
-
-    thisPage.videoViewStat(playVideoData.id, index);
 
     _qqVideo2.default.getVideoes(vid).then(function (response) {
       var src = response.src;

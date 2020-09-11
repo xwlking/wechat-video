@@ -8,6 +8,10 @@ var _qqVideo = require("../static/utils/qqVideo.js");
 
 var _qqVideo2 = _interopRequireDefault(_qqVideo);
 
+var _data = require("../static/data/data.js");
+
+var _data2 = _interopRequireDefault(_data);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -41,12 +45,7 @@ exports.default = Page({
   },
   onLoad: function onLoad(e) {
     thisPage = this;
-    app.getCertificate().then(function () {
-      thisPage.queryVideoCategoryList();
-      thisPage.setData({
-        superUserFlag: wx.getStorageSync("superUserFlag")
-      });
-    });
+    thisPage.queryVideoCategoryList();
   },
   handleTabsChange: function handleTabsChange(e) {
     var scrollViewDataArr = thisPage.data.scrollViewDataArr;
@@ -69,7 +68,6 @@ exports.default = Page({
       scrollViewIndex: index,
       scrollViewDataArr: scrollViewDataArr
     });
-
     if (scrollViewDataArr[index].videoDataList.length == 0) {
       var page = scrollViewDataArr[index].page;
       var size = thisPage.data.size;
@@ -82,7 +80,7 @@ exports.default = Page({
     var scrollViewDataArr = [];
     for (var i = 0, len = videoCategoryList.length; i < len; i++) {
       scrollViewDataArr.push({
-        page: 1,
+        page: 0,
         videoDataList: [],
         totalPage: 0,
         totalNum: 0,
@@ -100,131 +98,72 @@ exports.default = Page({
    * 查询分类列表
    */
   queryVideoCategoryList: function queryVideoCategoryList() {
-    var jwt = wx.getStorageSync("jwt");
-    wx.request({
-      url: app.server + "/miniapp/lg/video/category",
-      method: "GET",
-      header: {
-        Authorization: jwt
-      },
-      data: {
-        page: 1,
-        size: 10
-      },
-      success: function success(res) {
-        var result = res.data;
-        if (result.status) {
-          var videoCategoryList = res.data.resultObj;
-          thisPage.setData({
-            videoCategoryList: videoCategoryList
-          });
-          thisPage.initScrollViewParam(videoCategoryList);
-          thisPage.getVideoList(videoCategoryList[0].id, 1, 10);
-        } else {
-          var message = res.data.message;
-          wx.showToast({
-            title: message,
-            icon: "none"
-          });
-        }
-      },
-      fail: function fail(e) {
-        // app.requestSeverFailHint();
-      },
-      complete: function complete(e) {}
+    var videoCategoryList = _data2.default.category;
+    thisPage.setData({
+      videoCategoryList: videoCategoryList
     });
+    thisPage.initScrollViewParam(videoCategoryList);
+    thisPage.getVideoList(videoCategoryList[0].id, 0, 10);
   },
 
   /**
    * 查询视频列表
    */
   getVideoList: function getVideoList(videoCategoryId, page, size) {
-    thisPage.setData({
-      forbidLoadFlag: true
-    });
-    var jwt = wx.getStorageSync("jwt");
-    wx.request({
-      url: app.server + "/miniapp/lg/video",
-      method: "GET",
-      header: {
-        Authorization: jwt
-      },
-      data: {
-        videoCategoryId: videoCategoryId,
-        page: page,
-        size: size
-      },
-      success: function success(res) {
-        var result = res.data;
-        if (result.status) {
-          var newDataList = res.data.resultObj.records;
-          var totalNum = res.data.resultObj.total;
-          // 计算总页数
-          var totalPage = parseInt((parseInt(totalNum) - 1) / parseInt(size) + 1);
+    var totalNum = 60;
+    // 计算总页数
+    var totalPage = parseInt((parseInt(totalNum) - 1) / parseInt(size) + 1);
 
-          var scrollViewIndex = thisPage.data.scrollViewIndex;
-          var scrollViewDataArr = thisPage.data.scrollViewDataArr;
+    var startIndex = 10 * page;
+    var endIndex = 10 * page + 10;
+    var videoList = _data2.default.videoList;
+    var newDataList = videoList[videoCategoryId].slice(startIndex, endIndex);
+    var scrollViewIndex = thisPage.data.scrollViewIndex;
+    var scrollViewDataArr = thisPage.data.scrollViewDataArr;
 
-          if (page == 1) {
-            scrollViewDataArr[scrollViewIndex].videoDataList = newDataList;
-          } else {
-            var dataJoinWay = thisPage.data.dataJoinWay;
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
+    if (page == 0) {
+      scrollViewDataArr[scrollViewIndex].videoDataList = newDataList;
+    } else {
+      var dataJoinWay = thisPage.data.dataJoinWay;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-            try {
-              for (var _iterator = newDataList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var newData = _step.value;
+      try {
+        for (var _iterator = newDataList[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var newData = _step.value;
 
-                if (dataJoinWay == "top") {
-                  scrollViewDataArr[scrollViewIndex].videoDataList.unshift(newData); //头部累加
-                } else if (dataJoinWay == "bottom") {
-                  scrollViewDataArr[scrollViewIndex].videoDataList.push(newData); //底部累加
-                }
-              }
-            } catch (err) {
-              _didIteratorError = true;
-              _iteratorError = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                  _iterator.return();
-                }
-              } finally {
-                if (_didIteratorError) {
-                  throw _iteratorError;
-                }
-              }
-            }
+          if (dataJoinWay == "top") {
+            scrollViewDataArr[scrollViewIndex].videoDataList.unshift(newData); //头部累加
+          } else if (dataJoinWay == "bottom") {
+            scrollViewDataArr[scrollViewIndex].videoDataList.push(newData); //底部累加
           }
-
-          scrollViewDataArr[scrollViewIndex].playVideoId = 0;
-          scrollViewDataArr[scrollViewIndex].triggered = false;
-          scrollViewDataArr[scrollViewIndex].totalPage = totalPage;
-          scrollViewDataArr[scrollViewIndex].totalNum = totalNum;
-          scrollViewDataArr[scrollViewIndex].buttomTextFlag = page >= totalPage ? 2 : 1;
-
-          thisPage.setData({
-            scrollViewDataArr: scrollViewDataArr
-          });
-        } else {
-          var message = res.data.message;
-          wx.showToast({
-            title: message,
-            icon: "none"
-          });
         }
-      },
-      fail: function fail(e) {
-        // app.requestSeverFailHint();
-      },
-      complete: function complete(e) {
-        thisPage.setData({
-          forbidLoadFlag: false,
-          dataJoinWay: ""
-        });
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
       }
+    }
+
+    scrollViewDataArr[scrollViewIndex].playVideoId = 0;
+    scrollViewDataArr[scrollViewIndex].triggered = false;
+    scrollViewDataArr[scrollViewIndex].totalPage = totalPage;
+    scrollViewDataArr[scrollViewIndex].totalNum = totalNum;
+    scrollViewDataArr[scrollViewIndex].buttomTextFlag = page >= totalPage - 1 ? 2 : 1;
+
+    thisPage.setData({
+      scrollViewDataArr: scrollViewDataArr,
+      dataJoinWay: ""
     });
   },
 
@@ -239,8 +178,7 @@ exports.default = Page({
     var totalPage = thisPage.data.scrollViewDataArr[scrollViewIndex].totalPage;
     var videoCategoryId = thisPage.data.scrollViewDataArr[scrollViewIndex].videoCategoryId;
 
-    if (thisPage.data.forbidLoadFlagTab) return; //禁止查询标识
-    if (page >= totalPage) return;
+    if (page >= totalPage - 1) return;
 
     page += 1;
     scrollViewDataArr[scrollViewIndex].page = page;
@@ -262,11 +200,9 @@ exports.default = Page({
     var totalPage = thisPage.data.scrollViewDataArr[scrollViewIndex].totalPage;
     var videoCategoryId = thisPage.data.scrollViewDataArr[scrollViewIndex].videoCategoryId;
 
-    if (thisPage.data.forbidLoadFlagTab) return; //禁止查询标识
-
     scrollViewDataArr[scrollViewIndex].triggered = true;
 
-    if (page >= totalPage) page = 1;else page += 1;
+    if (page >= totalPage - 1) page = 0;else page += 1;
 
     scrollViewDataArr[scrollViewIndex].page = page;
     thisPage.setData({
@@ -331,7 +267,6 @@ exports.default = Page({
    */
   goVideoDetailPage: function goVideoDetailPage(e) {
     var videodata = e.currentTarget.dataset.videodata;
-    // console.log(videodata);
     var index = e.currentTarget.dataset.index;
     var page = thisPage.data.page;
     var scrollViewIndex = thisPage.data.scrollViewIndex;
